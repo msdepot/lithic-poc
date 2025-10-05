@@ -1,0 +1,322 @@
+Lithic POC - Project Structure
+================================
+
+/workspace
+│
+├── backend/                          # Backend API Server
+│   ├── src/
+│   │   ├── config/
+│   │   │   ├── database.js          # Supabase configuration
+│   │   │   └── lithic.js            # Lithic API client
+│   │   │
+│   │   ├── controllers/             # Request handlers
+│   │   │   ├── auth.controller.js
+│   │   │   ├── account.controller.js
+│   │   │   ├── user.controller.js
+│   │   │   ├── card.controller.js
+│   │   │   └── spending-profile.controller.js
+│   │   │
+│   │   ├── services/                # Business logic
+│   │   │   └── lithic.service.js
+│   │   │
+│   │   ├── routes/                  # API routes
+│   │   │   └── index.js
+│   │   │
+│   │   └── middleware/              # Auth middleware
+│   │       └── auth.js
+│   │
+│   ├── server.js                    # Main server file
+│   ├── package.json                 # Dependencies
+│   ├── .env                         # Environment config
+│   ├── database-schema.sql          # PostgreSQL schema
+│   ├── setup-database.sh            # Database setup script
+│   └── supabase-config.toml         # Supabase configuration
+│
+├── frontend/                        # React Frontend
+│   ├── public/
+│   │   └── index.html              # HTML template
+│   │
+│   ├── src/
+│   │   ├── pages/                  # Main pages
+│   │   │   ├── Login.js           # Login page
+│   │   │   ├── Login.css          # Login styles
+│   │   │   ├── AdminDashboard.js  # Admin CRM interface
+│   │   │   └── UserDashboard.js   # User interface
+│   │   │
+│   │   ├── services/              # API communication
+│   │   │   └── api.js            # API client
+│   │   │
+│   │   ├── App.js                # Main app component
+│   │   ├── App.css               # App styles
+│   │   ├── index.js              # React entry point
+│   │   └── index.css             # Global styles
+│   │
+│   ├── package.json              # Dependencies
+│   └── .env                      # API URL config
+│
+├── Documentation/                 # All documentation
+│   ├── README.md                 # Main documentation
+│   ├── QUICKSTART.md            # 5-minute setup guide
+│   ├── SETUP_GUIDE.md           # Detailed setup
+│   ├── TESTING_FLOW.md          # Complete test flow
+│   ├── PROJECT_OVERVIEW.md      # Technical overview
+│   └── STRUCTURE.txt            # This file
+│
+├── Scripts/                      # Utility scripts
+│   └── start.sh                 # Start all services
+│
+├── Configuration/
+│   ├── package.json             # Root package.json
+│   └── .gitignore              # Git ignore rules
+│
+└── Database/
+    └── backend/database-schema.sql  # Complete schema
+
+
+Key Files Explained
+===================
+
+Backend Core:
+-------------
+server.js                 - Express server setup, middleware, error handling
+src/routes/index.js       - All API endpoint definitions
+src/config/database.js    - Supabase connection
+src/config/lithic.js      - Lithic API client initialization
+
+Controllers:
+------------
+auth.controller.js        - Admin login, user login, JWT handling
+account.controller.js     - Account creation with Lithic integration
+user.controller.js        - User CRUD with role validation
+card.controller.js        - Card creation and listing
+spending-profile.controller.js - Spending profile management
+
+Services:
+---------
+lithic.service.js         - Wrapper for all Lithic API calls
+                           (account holders, cards, auth rules)
+
+Frontend Core:
+--------------
+App.js                    - Main app with routing, auth state
+pages/Login.js            - Dual login (admin/user)
+pages/AdminDashboard.js   - CRM for account creation
+pages/UserDashboard.js    - User/card/profile management
+services/api.js           - Axios client with interceptors
+
+Database:
+---------
+database-schema.sql       - Complete PostgreSQL schema:
+                           - accounts table
+                           - users table
+                           - cards table
+                           - spending_profiles table
+                           - sessions table
+                           - indexes
+
+Documentation:
+--------------
+README.md                 - Complete project documentation
+QUICKSTART.md            - Fast setup (5 minutes)
+SETUP_GUIDE.md           - Detailed setup instructions
+TESTING_FLOW.md          - Step-by-step test script
+PROJECT_OVERVIEW.md      - Technical deep dive
+
+
+API Endpoints
+=============
+
+Authentication:
+  POST   /api/auth/admin/login
+  POST   /api/auth/user/login
+  GET    /api/auth/me
+
+Accounts (Admin only):
+  POST   /api/accounts
+  GET    /api/accounts
+  GET    /api/accounts/:id
+
+Users:
+  POST   /api/users
+  GET    /api/users
+  GET    /api/users/:id
+
+Cards:
+  POST   /api/cards
+  GET    /api/cards
+  GET    /api/cards/:id
+
+Spending Profiles:
+  POST   /api/spending-profiles
+  GET    /api/spending-profiles
+  GET    /api/spending-profiles/:id
+
+
+Services & Ports
+================
+
+Backend API:       http://localhost:3001
+Frontend:          http://localhost:3000
+Supabase API:      http://127.0.0.1:54321
+Supabase Studio:   http://127.0.0.1:54323
+Lithic API:        Sandbox (external)
+
+
+Environment Variables
+=====================
+
+Backend (.env):
+  PORT=3001
+  SUPABASE_URL=http://127.0.0.1:54321
+  SUPABASE_ANON_KEY=<from supabase start>
+  LITHIC_API_KEY=595234f1-968e-4fad-b308-41f6e19bc93f
+  LITHIC_ENVIRONMENT=sandbox
+  JWT_SECRET=your-secret-key-change-in-production
+  ADMIN_USERNAME=admin
+  ADMIN_PASSWORD=admin@123
+
+Frontend (.env):
+  REACT_APP_API_URL=http://localhost:3001/api
+
+
+Quick Commands
+==============
+
+# Start everything
+./start.sh
+
+# Backend only
+cd backend
+npm start
+
+# Frontend only
+cd frontend
+npm start
+
+# Supabase
+cd backend
+supabase start    # Start
+supabase stop     # Stop
+supabase status   # Check status
+
+
+Database Schema
+===============
+
+accounts
+  - id (uuid, PK)
+  - name (string)
+  - owner_email (string, unique)
+  - lithic_account_holder_token (string)
+  - lithic_financial_account_token (string)
+  - balance (decimal)
+  - created_at (timestamp)
+
+users
+  - id (uuid, PK)
+  - account_id (uuid, FK -> accounts)
+  - email (string)
+  - name (string)
+  - role (enum: owner, admin, user, analyst)
+  - lithic_account_holder_token (string)
+  - created_at (timestamp)
+
+cards
+  - id (uuid, PK)
+  - account_id (uuid, FK -> accounts)
+  - user_id (uuid, FK -> users)
+  - card_type (enum: debit, reloadable, limit_based)
+  - lithic_card_token (string)
+  - last_four (string)
+  - spending_profile_id (uuid, FK -> spending_profiles)
+  - status (string)
+  - created_at (timestamp)
+
+spending_profiles
+  - id (uuid, PK)
+  - account_id (uuid, FK -> accounts)
+  - name (string)
+  - daily_limit (decimal)
+  - monthly_limit (decimal)
+  - allowed_categories (array)
+  - blocked_categories (array)
+  - lithic_auth_rule_token (string)
+  - created_by (uuid, FK -> users)
+  - created_at (timestamp)
+
+sessions
+  - id (uuid, PK)
+  - user_id (uuid, FK -> users)
+  - user_type (string)
+  - token (text)
+  - expires_at (timestamp)
+  - created_at (timestamp)
+
+
+Technology Stack
+================
+
+Backend:
+  - Node.js 18+
+  - Express.js 4.x
+  - Supabase (PostgreSQL)
+  - Lithic SDK
+  - JWT for auth
+  - Axios for HTTP
+
+Frontend:
+  - React 18.x
+  - React Router 6.x
+  - Axios
+  - Pure CSS (no framework)
+
+Database:
+  - PostgreSQL via Supabase
+  - Local development instance
+  - Supabase CLI for management
+
+External APIs:
+  - Lithic Sandbox API
+
+
+Project Statistics
+==================
+
+Backend Files:       14
+Frontend Files:      8
+Documentation:       5
+Total Lines:         ~3000+
+API Endpoints:       15
+Database Tables:     5
+User Roles:          4
+Card Types:          3
+
+
+Next Steps
+==========
+
+1. Follow QUICKSTART.md to get running
+2. Test complete flow with TESTING_FLOW.md
+3. Read PROJECT_OVERVIEW.md for deep dive
+4. Customize for your needs
+5. Deploy to production
+
+
+Support & Resources
+===================
+
+Lithic Docs:   https://docs.lithic.com
+Supabase Docs: https://supabase.com/docs
+React Docs:    https://react.dev
+
+
+License
+=======
+
+ISC License - Free to use and modify
+
+
+Created
+=======
+
+October 2025 - Lithic Card Issuing POC
