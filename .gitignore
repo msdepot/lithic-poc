@@ -94,3 +94,6 @@ supabase/.temp/
 supabase-cli
 *.tar.gz
 *.pkg
+node_modules
+dist
+.env
