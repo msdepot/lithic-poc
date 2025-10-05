@@ -1,202 +1,169 @@
-# Lithic POC - Payment Card Management System
+# Lithic POC - Card Management System
 
-[![Node.js](https://img.shields.io/badge/Node.js-18.20.8-green.svg)](https://nodejs.org/)
-[![Lithic API](https://img.shields.io/badge/Lithic-Sandbox-blue.svg)](https://docs.lithic.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue.svg)](https://www.postgresql.org/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+A complete proof-of-concept demonstrating a card management system integrated with Lithic's sandbox API. This POC includes user management, role-based access control, card creation, and spending profiles.
 
-## 🎯 **Overview**
+## 🚀 Quick Start
 
-A **production-ready proof-of-concept** demonstrating a complete payment card management system built with **Lithic's sandbox API**. This POC showcases real-world integration patterns, role-based access control, custom spending profiles, and full card lifecycle management.
+### Prerequisites
+- Node.js 18+
+- Docker Desktop (for Supabase)
+- npm or yarn
 
-> **🔗 Live Lithic Integration:** This POC uses real Lithic sandbox APIs, not mocked responses. It demonstrates actual account holder creation, financial account management, and card operations.
+### Setup Instructions
 
-## 🏗️ **What This POC Demonstrates**
-
-### **Core Features**
-- 🔐 **Complete RBAC System** - 5-tier role hierarchy (Owner, Super Admin, Admin, User, Analyst)
-- 💳 **Full Card Lifecycle** - Create, manage, lock/unlock, cancel cards with real Lithic integration
-- 📊 **Custom Spending Profiles** - Reusable spending limit templates with Lithic auth rules
-- 🏦 **Account Management** - Business and personal accounts with funding operations
-- 👥 **User Management** - Complete user hierarchy with proper permission enforcement
-- 📈 **Real-time Monitoring** - Supabase Studio web interface for database visualization
-
-### **Lithic Integration**
-- ✅ **Real Sandbox API** - Using API key `595234f1-968e-4fad-b308-41f6e19bc93f`
-- ✅ **Account Holders** - Real account holder creation in Lithic sandbox
-- ✅ **Financial Accounts** - Linked financial accounts for card operations
-- ✅ **Card Management** - Virtual and physical card creation with Lithic
-- ✅ **Auth Rules** - Spending controls via Lithic's authorization system
-- ✅ **Transaction Monitoring** - Ready for real transaction processing
-
-## 🚀 **Quick Start**
-
-### **Prerequisites**
-- Node.js 18+ (installed via NVM)
-- Docker Desktop (for database)
-- Postman (for API testing)
-
-### **Start Everything (One Command)**
+1. **Clone and Install Dependencies**
 ```bash
-# Start all services
-./start.sh
-```
-
-### **Stop Everything (One Command)**
-```bash
-# Stop all services  
-./stop.sh
-```
-
-### **Access Points**
-- 🌐 **API Server:** http://localhost:3000
-- 🏥 **Health Check:** http://localhost:3000/health
-- 📊 **Database Studio:** http://127.0.0.1:54323
-- 📧 **Email Testing:** http://127.0.0.1:54324
-
-### **Test with Postman**
-1. **Import:** `Lithic_POC_Corrected_Flow.postman_collection.json`
-2. **Environment:** Set `base_url` = `http://localhost:3000/api`
-3. **Run phases** to create MSD Cafe and Medina family scenario
-
-## 📁 **Project Structure**
-
-```
-lithic-poc/
-├── src/                           # Node.js API source code
-│   ├── controllers/               # Route controllers
-│   ├── middleware/                # Authentication, RBAC, validation
-│   ├── models/                    # Sequelize database models
-│   ├── routes/                    # Express route definitions
-│   ├── config/                    # Database and Lithic configuration
-│   └── utils/                     # Logging and helper utilities
-├── supabase/                      # Supabase configuration and migrations
-│   ├── config.toml               # Supabase local configuration
-│   ├── migrations/               # Database schema migrations
-│   └── seed.sql                  # Initial data seeding
-├── docs/                          # Complete documentation
-│   ├── api/                      # API documentation
-│   ├── setup/                    # Setup and configuration guides
-│   └── architecture/             # Technical architecture docs
-├── scripts/                       # Utility scripts
-├── package.json                   # Node.js dependencies
-├── .env                          # Environment configuration
-└── README.md                     # This overview
-```
-
-## 🎯 **Test Scenario: MSD Cafe & Medina Family**
-
-This POC implements a complete business scenario:
-
-### **Business Setup**
-- 🏪 **MSD Cafe** - Business account with $15,000 funding
-- 👑 **Eric Medina** - Business owner (Super Admin role)
-
-### **Family Hierarchy**
-- 👤 **Seth Medina** - Admin with personal debit card
-- 👤 **Gabriel Medina** - Admin with reloadable prepaid card  
-- 👤 **Nathalia Medina** - User with limit-based card (spending profile)
-- 👤 **Lindsey Medina** - Analyst (read-only, no cards)
-
-### **Card Distribution**
-- 💳 **Eric:** Business debit card (high limits)
-- 💳 **Seth:** Personal debit card (moderate limits)
-- 💳 **Gabriel:** Reloadable prepaid card (controlled limits)
-- 💳 **Nathalia:** Limit-based card with spending profile
-- ❌ **Lindsey:** No card (analyst role correctly blocked)
-
-## 🔧 **Current Status**
-
-### **✅ Working (Ready for Demo)**
-- Complete authentication system with JWT
-- Role-based access control (5 roles)
-- User and account management
-- Real Lithic account holder creation
-- Database with web interface
-- Comprehensive API framework
-
-### **⏳ In Progress**
-- Card creation with Lithic integration
-- Spending profiles with auth rules
-- Complete Postman test flow
-- Transaction monitoring setup
-
-## 📚 **Documentation**
-
-- **📖 [Quick Start Guide](docs/QUICK_START.md)** - Get running in 5 minutes
-- **🔧 [API Documentation](docs/api/)** - All endpoints with examples  
-- **🏗️ [Architecture Guide](docs/architecture/)** - Technical implementation details
-- **📊 [Complete Overview](docs/OVERVIEW.md)** - Detailed project overview
-- **📋 [Session Summary](SESSION_SUMMARY.md)** - What's completed and what's next
-
-## 🎯 **Key Achievements**
-
-### **Production-Ready Architecture**
-- Scalable database design with proper indexing
-- Comprehensive error handling and logging
-- Security best practices (JWT, RBAC, validation)
-- Real external API integration (Lithic)
-- Modern development stack (Node.js, Express, PostgreSQL)
-
-### **Business Logic Implementation**
-- Complete user lifecycle management
-- Account creation and funding operations
-- Card management with status controls
-- Custom spending profiles framework
-- Audit trail for compliance
-
-### **Integration Success**
-- Real Lithic sandbox account holder: `be03e066-bd0a-445b-ae2a-97e1a81cff0c`
-- Financial account simulation working
-- API key validation: `595234f1-968e-4fad-b308-41f6e19bc93f`
-- Database and API synchronization
-
-## 🚀 **Next Steps**
-
-1. **Complete card creation testing** with Lithic integration
-2. **Implement spending profiles** with real auth rules
-3. **Test complete user journey** from account to transactions
-4. **Add transaction simulation** for comprehensive testing
-5. **Deploy to production** environment when ready
-
-## 💡 **Technical Highlights**
-
-- **Real Lithic Integration:** Not just mocked APIs, but actual sandbox integration
-- **Production Architecture:** Built for scale with proper separation of concerns
-- **Security First:** Comprehensive RBAC and authentication
-- **Developer Experience:** Excellent tooling with Supabase Studio and health checks
-- **Business Ready:** Implements real-world payment card management patterns
-
-## 🔄 **Repository Setup**
-
-### **Clone and Setup**
-```bash
-# Clone the repository
-git clone https://github.com/msdepot/lithic-poc.git
-cd lithic-poc
-
-# Install dependencies
+# Install backend dependencies
+cd backend
 npm install
 
-# Copy environment template
-cp env.example .env
-# Update .env with your Lithic API key if different from sandbox default
-
-# Start everything
-./start.sh
+# Install frontend dependencies
+cd ../frontend
+npm install
 ```
 
-### **Contributing**
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. **Start Supabase (requires Docker)**
+```bash
+cd backend
+npx supabase start
+```
 
-## 📞 **Support**
+3. **Run Database Migrations**
+```bash
+# Apply the database schema
+psql postgresql://postgres:postgres@localhost:54322/postgres < src/config/database.sql
+```
 
-- **Issues:** Use GitHub Issues for bug reports and feature requests
-- **Documentation:** Complete docs in `/docs` folder
-- **API Reference:** See `docs/api/LITHIC_POC_DOCUMENTATION.md`
+4. **Start the Backend Server**
+```bash
+cd backend
+npm run dev
+# Server runs on http://localhost:3001
+```
 
-This POC successfully demonstrates a complete, production-ready payment card management system with real Lithic integration! 🎉
+5. **Start the Frontend**
+```bash
+cd frontend
+npm run dev
+# Frontend runs on http://localhost:3000
+```
+
+## 📋 POC Flow
+
+### 1. Admin CRM Login
+- Navigate to http://localhost:3000
+- Login with email: `admin` (no password required)
+- Create a new business account with owner details
+
+### 2. Owner Login
+- Logout from admin
+- Login with the owner email you just created
+- You'll see the Owner Dashboard with full access
+
+### 3. Create Users (as Owner)
+- Go to Users menu
+- Create the following users:
+  - Seth (Admin role)
+  - Gabriel (User role)
+  - Nathalia (User role)
+  - Lindsey (User role)
+
+### 4. Create Cards for Owner and Seth
+- Go to All Cards menu
+- Create a debit card for yourself (owner)
+- Create a debit card for Seth
+
+### 5. Login as Seth
+- Logout and login as Seth
+- You'll see the Admin Dashboard (limited permissions)
+
+### 6. Create Reloadable Card for Gabriel (as Seth)
+- Go to All Cards menu
+- Create a reloadable card for Gabriel
+
+### 7. Create Spending Profile
+- Go to Spending Profiles menu
+- Create a profile with custom limits and restrictions
+
+### 8. Create Card for Nathalia with Profile
+- Go to All Cards menu
+- Create a card for Nathalia
+- Select the spending profile you just created
+
+### 9. View Users and Cards
+- Navigate through Users and All Cards to see all details
+- Each user can login and view their own cards in "My Cards"
+
+## 🏗️ Architecture
+
+### Backend (Node.js + Express)
+- RESTful API with JWT authentication
+- Lithic API integration for card management
+- Supabase/PostgreSQL for data persistence
+- Role-based access control (Owner, Admin, User)
+
+### Frontend (React + Vite)
+- Simple grayscale UI with Tailwind CSS
+- Role-based dashboard views
+- Real-time Lithic integration
+
+### Database Schema
+- **accounts** - Business accounts
+- **users** - User accounts with roles
+- **cards** - Card records linked to users
+- **spending_profiles** - Reusable spending limit templates
+- **card_transactions** - Transaction history (for demo)
+
+## 🔑 Key Features
+
+### Authentication
+- Simple email-based login (no passwords for POC)
+- JWT token-based sessions
+- Role-based access control
+
+### User Management
+- Owner can create Admin and User accounts
+- Admin can create User accounts only
+- Each user gets a Lithic account holder ID
+
+### Card Management
+- Virtual, Physical, and Reloadable card types
+- Cards linked to Lithic API
+- Custom spending limits per card
+- Spending profiles for reusable limits
+
+### Spending Profiles
+- Create templates with spending rules
+- Daily, Monthly, and Per-Transaction limits
+- MCC category restrictions
+- Apply profiles to multiple cards
+
+## 🛠️ Environment Variables
+
+Backend `.env` file:
+```
+PORT=3001
+SUPABASE_URL=http://localhost:54321
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+LITHIC_API_KEY=595234f1-968e-4fad-b308-41f6e19bc93f
+LITHIC_API_URL=https://sandbox.lithic.com/v1
+JWT_SECRET=lithic-poc-secret-key-2024
+```
+
+## 📝 Notes
+
+- This is a POC - no password authentication for simplicity
+- All Lithic operations use the sandbox environment
+- Database resets when Supabase restarts
+- Cards created in Lithic sandbox are for testing only
+
+## 🎯 Success Criteria
+
+The POC demonstrates:
+1. ✅ Multi-tenant account structure
+2. ✅ Role-based user management
+3. ✅ Lithic API integration
+4. ✅ Card lifecycle management
+5. ✅ Spending profiles and limits
+6. ✅ Clean, functional UI
+7. ✅ Complete user flow from account creation to card usage
