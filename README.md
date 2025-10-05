@@ -1,8 +1,15 @@
 # Lithic POC - Payment Card Management System
 
+[![Node.js](https://img.shields.io/badge/Node.js-18.20.8-green.svg)](https://nodejs.org/)
+[![Lithic API](https://img.shields.io/badge/Lithic-Sandbox-blue.svg)](https://docs.lithic.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue.svg)](https://www.postgresql.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 ## 🎯 **Overview**
 
-A comprehensive proof-of-concept demonstrating a complete payment card management system built with **Lithic's sandbox API**. This POC showcases real-world integration patterns, role-based access control, custom spending profiles, and full card lifecycle management.
+A **production-ready proof-of-concept** demonstrating a complete payment card management system built with **Lithic's sandbox API**. This POC showcases real-world integration patterns, role-based access control, custom spending profiles, and full card lifecycle management.
+
+> **🔗 Live Lithic Integration:** This POC uses real Lithic sandbox APIs, not mocked responses. It demonstrates actual account holder creation, financial account management, and card operations.
 
 ## 🏗️ **What This POC Demonstrates**
 
@@ -116,10 +123,11 @@ This POC implements a complete business scenario:
 
 ## 📚 **Documentation**
 
-- **📖 [Setup Guide](docs/setup/)** - Complete installation and startup instructions
-- **🔧 [API Documentation](docs/api/)** - All endpoints with examples
+- **📖 [Quick Start Guide](docs/QUICK_START.md)** - Get running in 5 minutes
+- **🔧 [API Documentation](docs/api/)** - All endpoints with examples  
 - **🏗️ [Architecture Guide](docs/architecture/)** - Technical implementation details
-- **🔄 [Shutdown/Restart](SHUTDOWN_AND_RESTART_GUIDE.md)** - How to stop and start services
+- **📊 [Complete Overview](docs/OVERVIEW.md)** - Detailed project overview
+- **📋 [Session Summary](SESSION_SUMMARY.md)** - What's completed and what's next
 
 ## 🎯 **Key Achievements**
 
@@ -158,5 +166,37 @@ This POC implements a complete business scenario:
 - **Security First:** Comprehensive RBAC and authentication
 - **Developer Experience:** Excellent tooling with Supabase Studio and health checks
 - **Business Ready:** Implements real-world payment card management patterns
+
+## 🔄 **Repository Setup**
+
+### **Clone and Setup**
+```bash
+# Clone the repository
+git clone https://github.com/msdepot/lithic-poc.git
+cd lithic-poc
+
+# Install dependencies
+npm install
+
+# Copy environment template
+cp env.example .env
+# Update .env with your Lithic API key if different from sandbox default
+
+# Start everything
+./start.sh
+```
+
+### **Contributing**
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📞 **Support**
+
+- **Issues:** Use GitHub Issues for bug reports and feature requests
+- **Documentation:** Complete docs in `/docs` folder
+- **API Reference:** See `docs/api/LITHIC_POC_DOCUMENTATION.md`
 
 This POC successfully demonstrates a complete, production-ready payment card management system with real Lithic integration! 🎉
