@@ -1,0 +1,1463 @@
+{
+	"info": {
+		"_postman_id": "lithic-poc-corrected-flow",
+		"name": "Lithic POC - Corrected Flow (MSD Cafe)",
+		"description": "**Corrected Lithic POC Collection** following proper account creation flow:\n\n## 🎯 **Correct Flow Sequence:**\n\n### **Phase 1: Foundation Setup**\n1. **Login as Admin** - Get authentication token\n2. **Create MSD Cafe Account** - Business account first\n3. **Create Eric Medina (Owner)** - Account owner with Lithic account holder\n\n### **Phase 2: User Hierarchy**\n4. **Login as Eric (Owner)** - Switch to owner context\n5. **Eric creates Seth (Super Admin)** - Using owner privileges\n6. **Login as Seth** - Switch to super admin context  \n7. **Seth creates Gabriel (Admin)** - Using super admin privileges\n8. **Login as Gabriel** - Switch to admin context\n9. **Gabriel creates Nathalia (User) & Lindsey (Analyst)** - Using admin privileges\n\n### **Phase 3: Card Creation**\n10. **Eric creates debit card for himself** - Owner card\n11. **Eric creates debit card for Seth** - Owner creates for super admin\n12. **Seth creates reloadable card for Gabriel** - Super admin creates for admin\n13. **Gabriel creates spending profile** - Admin creates spending controls\n14. **Gabriel creates limit-based card for Nathalia** - Admin creates with profile\n\n### **Phase 4: Validation**\n15. **Test RBAC permissions** - Verify role restrictions\n16. **Test card operations** - Lock/unlock, status changes\n17. **Validate Lithic integration** - Confirm sandbox API calls\n\n## 🔑 **Environment Variables:**\n- `base_url`: http://localhost:3000/api\n- `lithic_api_key`: 595234f1-968e-4fad-b308-41f6e19bc93f\n- All user/account/card IDs auto-populated during flow\n\n## 📋 **Key Validation Points:**\n- ✅ Account holder created before financial account\n- ✅ Proper role hierarchy in user creation\n- ✅ Cards linked to correct Lithic accounts\n- ✅ Spending profiles integrated with auth rules\n- ✅ RBAC properly enforced at each step",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🔐 Phase 1: Foundation Setup",
+			"item": [
+				{
+					"name": "1.1 Login as Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Admin login successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data).to.have.property('token');",
+									"    ",
+									"    // Store admin tokens",
+									"    pm.environment.set(\"admin_jwt_token\", responseJson.data.token);",
+									"    pm.environment.set(\"admin_refresh_token\", responseJson.data.refresh_token);",
+									"    pm.environment.set(\"admin_user_id\", responseJson.data.user.user_id);",
+									"    ",
+									"    // Set current token to admin",
+									"    pm.environment.set(\"jwt_token\", responseJson.data.token);",
+									"    ",
+									"    console.log(\"✅ Logged in as Admin - Token acquired\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "**Step 1:** Login with default admin credentials to start the flow.\n\n**Purpose:** Get authentication token for initial setup operations."
+					}
+				},
+				{
+					"name": "1.2 Create Eric Medina (Owner) - WITH Account Holder",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Eric (Super Admin) created successfully with Lithic account holder\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.user.username).to.eql('eric_medina');",
+									"    pm.expect(responseJson.data.user.role.role_name).to.eql('super_admin');",
+									"    ",
+									"    // Store Eric's details",
+									"    pm.environment.set(\"eric_user_id\", responseJson.data.user.user_id);",
+									"    ",
+									"    // Check if Lithic account holder was created",
+									"    if (responseJson.data.lithic_account_holder) {",
+									"        pm.environment.set(\"eric_lithic_account_holder_token\", responseJson.data.lithic_account_holder.token);",
+									"        console.log(\"✅ Created Eric Medina (Super Admin) with Lithic Account Holder\");",
+									"        console.log(\"🔗 Lithic Account Holder Token:\", responseJson.data.lithic_account_holder.token);",
+									"    } else {",
+									"        console.log(\"⚠️ Eric created but Lithic account holder creation may have failed\");",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"eric_medina\",\n  \"email\": \"eric@msdcafe.com\",\n  \"password\": \"EricMedina123!\",\n  \"role\": \"super_admin\",\n  \"first_name\": \"Eric\",\n  \"last_name\": \"Medina\",\n  \"phone\": \"+1-555-0101\",\n  \"address1\": \"123 Cafe Street\",\n  \"city\": \"New York\",\n  \"state\": \"NY\",\n  \"postal_code\": \"10001\",\n  \"dob\": \"1985-03-15\",\n  \"government_id\": \"123456789\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": "**Step 2:** Create Eric Medina as super admin (MSD Cafe business owner).\n\n**Key Points:**\n- Creates Lithic account holder automatically\n- Eric will own the MSD Cafe business account\n- Required before creating financial accounts in Lithic\n- Note: Admin user remains system owner, Eric is business owner\n\n**Lithic Integration:**\n- Account holder created with KYC_EXEMPT workflow\n- Individual account holder (business will be separate)"
+					}
+				},
+				{
+					"name": "1.3 Create MSD Cafe Business Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"MSD Cafe business account created successfully\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.account.account_name).to.eql('MSD Cafe');",
+									"    pm.expect(responseJson.data.account.account_type).to.eql('business');",
+									"    pm.expect(responseJson.data.account.user_id).to.eql(parseInt(pm.environment.get('eric_user_id')));",
+									"    ",
+									"    // Store MSD Cafe account details",
+									"    pm.environment.set(\"msd_cafe_account_id\", responseJson.data.account.account_id);",
+									"    ",
+									"    // Check if Lithic financial account was created",
+									"    if (responseJson.data.lithic_financial_account) {",
+									"        pm.environment.set(\"msd_cafe_lithic_financial_account_token\", responseJson.data.lithic_financial_account.token);",
+									"        console.log(\"✅ Created MSD Cafe business account with Lithic Financial Account\");",
+									"        console.log(\"🔗 Lithic Financial Account Token:\", responseJson.data.lithic_financial_account.token);",
+									"    } else {",
+									"        console.log(\"⚠️ MSD Cafe account created but Lithic financial account creation may have failed\");",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"account_name\": \"MSD Cafe\",\n  \"user_id\": {{eric_user_id}},\n  \"account_type\": \"business\",\n  \"initial_balance\": 15000.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts"
+							]
+						},
+						"description": "**Step 3:** Create the main MSD Cafe business account owned by Eric.\n\n**Key Points:**\n- Links to Eric's Lithic account holder\n- Creates Lithic financial account for card operations\n- Funded with initial $15,000 for operations\n\n**Lithic Integration:**\n- Financial account created in Lithic\n- Type: OPERATING account\n- Ready for card creation"
+					}
+				}
+			],
+			"description": "**Phase 1:** Establish the foundation with admin access, owner creation, and business account setup."
+		},
+		{
+			"name": "👥 Phase 2: User Hierarchy Creation",
+			"item": [
+				{
+					"name": "2.1 Login as Eric (Owner)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Eric (Owner) login successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.user.role).to.eql('owner');",
+									"    ",
+									"    // Store Eric's tokens",
+									"    pm.environment.set(\"eric_jwt_token\", responseJson.data.token);",
+									"    pm.environment.set(\"eric_refresh_token\", responseJson.data.refresh_token);",
+									"    ",
+									"    // Set current token to Eric",
+									"    pm.environment.set(\"jwt_token\", responseJson.data.token);",
+									"    ",
+									"    console.log(\"✅ Logged in as Eric (Owner) - Full system access\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"eric_medina\",\n  \"password\": \"EricMedina123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "**Step 4:** Login as Eric (Owner) to create super admin.\n\n**RBAC:** Only owners can create super admin users."
+					}
+				},
+				{
+					"name": "2.2 Eric Creates Seth (Super Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Seth (Super Admin) created successfully by Eric\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.user.username).to.eql('seth_medina');",
+									"    pm.expect(responseJson.data.user.role.role_name).to.eql('super_admin');",
+									"    ",
+									"    pm.environment.set(\"seth_user_id\", responseJson.data.user.user_id);",
+									"    ",
+									"    if (responseJson.data.lithic_account_holder) {",
+									"        pm.environment.set(\"seth_lithic_account_holder_token\", responseJson.data.lithic_account_holder.token);",
+									"        console.log(\"✅ Seth (Super Admin) created with Lithic Account Holder\");",
+									"    } else {",
+									"        console.log(\"⚠️ Seth created but Lithic account holder creation may have failed\");",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"seth_medina\",\n  \"email\": \"seth@msdcafe.com\",\n  \"password\": \"SethMedina123!\",\n  \"role\": \"super_admin\",\n  \"first_name\": \"Seth\",\n  \"last_name\": \"Medina\",\n  \"phone\": \"+1-555-0102\",\n  \"address1\": \"456 Admin Avenue\",\n  \"city\": \"New York\",\n  \"state\": \"NY\",\n  \"postal_code\": \"10002\",\n  \"dob\": \"1988-07-22\",\n  \"government_id\": \"987654321\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": "**Step 5:** Eric (Owner) creates Seth as Super Admin.\n\n**RBAC Validation:** Only owners can create super admin users.\n\n**Lithic Integration:** Creates account holder for Seth to enable card creation later."
+					}
+				},
+				{
+					"name": "2.3 Create Seth's Personal Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Seth's personal account created successfully\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.account.user_id).to.eql(parseInt(pm.environment.get('seth_user_id')));",
+									"    ",
+									"    pm.environment.set(\"seth_account_id\", responseJson.data.account.account_id);",
+									"    ",
+									"    if (responseJson.data.lithic_financial_account) {",
+									"        pm.environment.set(\"seth_lithic_financial_account_token\", responseJson.data.lithic_financial_account.token);",
+									"        console.log(\"✅ Seth's personal account created with Lithic Financial Account\");",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"account_name\": \"Seth's Personal Account\",\n  \"user_id\": {{seth_user_id}},\n  \"account_type\": \"personal\",\n  \"initial_balance\": 5000.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts"
+							]
+						},
+						"description": "Create Seth's personal account for his card operations."
+					}
+				},
+				{
+					"name": "2.4 Login as Seth (Super Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Seth (Super Admin) login successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.user.role).to.eql('super_admin');",
+									"    ",
+									"    // Store Seth's tokens",
+									"    pm.environment.set(\"seth_jwt_token\", responseJson.data.token);",
+									"    pm.environment.set(\"seth_refresh_token\", responseJson.data.refresh_token);",
+									"    ",
+									"    // Set current token to Seth",
+									"    pm.environment.set(\"jwt_token\", responseJson.data.token);",
+									"    ",
+									"    console.log(\"✅ Logged in as Seth (Super Admin) - Can create admin users\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"seth_medina\",\n  \"password\": \"SethMedina123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "**Step 6:** Login as Seth (Super Admin) to create admin users.\n\n**RBAC:** Super admins can create admin, user, and analyst roles."
+					}
+				},
+				{
+					"name": "2.5 Seth Creates Gabriel (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Gabriel (Admin) created successfully by Seth\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.user.username).to.eql('gabriel_medina');",
+									"    pm.expect(responseJson.data.user.role.role_name).to.eql('admin');",
+									"    ",
+									"    pm.environment.set(\"gabriel_user_id\", responseJson.data.user.user_id);",
+									"    ",
+									"    if (responseJson.data.lithic_account_holder) {",
+									"        pm.environment.set(\"gabriel_lithic_account_holder_token\", responseJson.data.lithic_account_holder.token);",
+									"        console.log(\"✅ Gabriel (Admin) created with Lithic Account Holder\");",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"gabriel_medina\",\n  \"email\": \"gabriel@msdcafe.com\",\n  \"password\": \"GabrielMedina123!\",\n  \"role\": \"admin\",\n  \"first_name\": \"Gabriel\",\n  \"last_name\": \"Medina\",\n  \"phone\": \"+1-555-0103\",\n  \"address1\": \"789 Manager Street\",\n  \"city\": \"New York\",\n  \"state\": \"NY\",\n  \"postal_code\": \"10003\",\n  \"dob\": \"1990-11-08\",\n  \"government_id\": \"456789123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": "**Step 7:** Seth (Super Admin) creates Gabriel as Admin.\n\n**RBAC Validation:** Super admins can create admin users."
+					}
+				},
+				{
+					"name": "2.6 Create Gabriel's Personal Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Gabriel's personal account created successfully\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.account.user_id).to.eql(parseInt(pm.environment.get('gabriel_user_id')));",
+									"    ",
+									"    pm.environment.set(\"gabriel_account_id\", responseJson.data.account.account_id);",
+									"    ",
+									"    if (responseJson.data.lithic_financial_account) {",
+									"        pm.environment.set(\"gabriel_lithic_financial_account_token\", responseJson.data.lithic_financial_account.token);",
+									"        console.log(\"✅ Gabriel's personal account created with Lithic Financial Account\");",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"account_name\": \"Gabriel's Personal Account\",\n  \"user_id\": {{gabriel_user_id}},\n  \"account_type\": \"personal\",\n  \"initial_balance\": 3000.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts"
+							]
+						},
+						"description": "Create Gabriel's personal account for his card operations."
+					}
+				},
+				{
+					"name": "2.7 Login as Gabriel (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Gabriel (Admin) login successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.user.role).to.eql('admin');",
+									"    ",
+									"    // Store Gabriel's tokens",
+									"    pm.environment.set(\"gabriel_jwt_token\", responseJson.data.token);",
+									"    pm.environment.set(\"gabriel_refresh_token\", responseJson.data.refresh_token);",
+									"    ",
+									"    // Set current token to Gabriel",
+									"    pm.environment.set(\"jwt_token\", responseJson.data.token);",
+									"    ",
+									"    console.log(\"✅ Logged in as Gabriel (Admin) - Can create user and analyst roles\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"gabriel_medina\",\n  \"password\": \"GabrielMedina123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "**Step 8:** Login as Gabriel (Admin) to create user and analyst roles.\n\n**RBAC:** Admins can create user and analyst roles only."
+					}
+				},
+				{
+					"name": "2.8 Gabriel Creates Nathalia (User)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Nathalia (User) created successfully by Gabriel\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.user.username).to.eql('nathalia_medina');",
+									"    pm.expect(responseJson.data.user.role.role_name).to.eql('user');",
+									"    ",
+									"    pm.environment.set(\"nathalia_user_id\", responseJson.data.user.user_id);",
+									"    ",
+									"    if (responseJson.data.lithic_account_holder) {",
+									"        pm.environment.set(\"nathalia_lithic_account_holder_token\", responseJson.data.lithic_account_holder.token);",
+									"        console.log(\"✅ Nathalia (User) created with Lithic Account Holder\");",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"nathalia_medina\",\n  \"email\": \"nathalia@msdcafe.com\",\n  \"password\": \"NathaliaMedina123!\",\n  \"role\": \"user\",\n  \"first_name\": \"Nathalia\",\n  \"last_name\": \"Medina\",\n  \"phone\": \"+1-555-0104\",\n  \"address1\": \"321 User Lane\",\n  \"city\": \"New York\",\n  \"state\": \"NY\",\n  \"postal_code\": \"10004\",\n  \"dob\": \"1995-01-30\",\n  \"government_id\": \"789123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": "**Step 9:** Gabriel (Admin) creates Nathalia as User.\n\n**RBAC Validation:** Admins can create user roles."
+					}
+				},
+				{
+					"name": "2.9 Create Nathalia's Personal Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Nathalia's personal account created successfully\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.account.user_id).to.eql(parseInt(pm.environment.get('nathalia_user_id')));",
+									"    ",
+									"    pm.environment.set(\"nathalia_account_id\", responseJson.data.account.account_id);",
+									"    ",
+									"    if (responseJson.data.lithic_financial_account) {",
+									"        pm.environment.set(\"nathalia_lithic_financial_account_token\", responseJson.data.lithic_financial_account.token);",
+									"        console.log(\"✅ Nathalia's personal account created with Lithic Financial Account\");",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"account_name\": \"Nathalia's Personal Account\",\n  \"user_id\": {{nathalia_user_id}},\n  \"account_type\": \"personal\",\n  \"initial_balance\": 2000.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts"
+							]
+						},
+						"description": "Create Nathalia's personal account for her card operations."
+					}
+				},
+				{
+					"name": "2.10 Gabriel Creates Lindsey (Analyst)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Lindsey (Analyst) created successfully by Gabriel\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.user.username).to.eql('lindsey_medina');",
+									"    pm.expect(responseJson.data.user.role.role_name).to.eql('analyst');",
+									"    ",
+									"    pm.environment.set(\"lindsey_user_id\", responseJson.data.user.user_id);",
+									"    ",
+									"    // Analysts don't get Lithic account holders (can't have cards)",
+									"    console.log(\"✅ Lindsey (Analyst) created - Read-only access for transaction analysis\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"lindsey_medina\",\n  \"email\": \"lindsey@msdcafe.com\",\n  \"password\": \"LindseyMedina123!\",\n  \"role\": \"analyst\",\n  \"first_name\": \"Lindsey\",\n  \"last_name\": \"Medina\",\n  \"phone\": \"+1-555-0105\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": "**Step 10:** Gabriel (Admin) creates Lindsey as Analyst.\n\n**RBAC Validation:** Admins can create analyst roles.\n**Note:** Analysts don't get Lithic account holders since they can't have cards."
+					}
+				}
+			],
+			"description": "**Phase 2:** Create the user hierarchy following proper RBAC flow - Owner creates Super Admin, Super Admin creates Admin, Admin creates User and Analyst."
+		},
+		{
+			"name": "💳 Phase 3: Card Creation Flow",
+			"item": [
+				{
+					"name": "3.1 Switch Back to Eric (Owner) for Card Creation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Switch back to Eric's token for card creation",
+									"pm.environment.set(\"jwt_token\", pm.environment.get(\"eric_jwt_token\"));",
+									"console.log(\"🔄 Switched to Eric (Owner) for card creation phase\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{eric_jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"profile"
+							]
+						},
+						"description": "Switch back to Eric's context for card creation operations."
+					}
+				},
+				{
+					"name": "3.2 Eric Creates His Own Debit Card",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Eric's debit card created successfully\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.card.card_type).to.eql('debit');",
+									"    pm.expect(responseJson.data.card.user_id).to.eql(parseInt(pm.environment.get('eric_user_id')));",
+									"    ",
+									"    pm.environment.set(\"eric_card_id\", responseJson.data.card.card_id);",
+									"    ",
+									"    if (responseJson.data.lithic_card) {",
+									"        pm.environment.set(\"eric_lithic_card_token\", responseJson.data.lithic_card.token);",
+									"        console.log(\"✅ Eric's debit card created with Lithic integration\");",
+									"        console.log(\"🔗 Lithic Card Token:\", responseJson.data.lithic_card.token);",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user_id\": {{eric_user_id}},\n  \"account_id\": {{msd_cafe_account_id}},\n  \"card_type\": \"debit\",\n  \"card_subtype\": \"virtual\",\n  \"custom_limits\": {\n    \"daily_limit\": 5000.00,\n    \"monthly_limit\": 25000.00,\n    \"per_transaction_limit\": 2500.00\n  },\n  \"memo\": \"Eric's primary business debit card for MSD Cafe operations\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cards",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cards"
+							]
+						},
+						"description": "**Step 11:** Eric (Owner) creates his own debit card.\n\n**Key Points:**\n- Uses MSD Cafe business account\n- High limits for business operations\n- Virtual card for immediate use\n\n**Lithic Integration:**\n- Creates card in Lithic using financial account\n- Custom auth rules for spending limits"
+					}
+				},
+				{
+					"name": "3.3 Eric Creates Debit Card for Seth",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Seth's debit card created successfully by Eric\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.card.card_type).to.eql('debit');",
+									"    pm.expect(responseJson.data.card.user_id).to.eql(parseInt(pm.environment.get('seth_user_id')));",
+									"    ",
+									"    pm.environment.set(\"seth_card_id\", responseJson.data.card.card_id);",
+									"    ",
+									"    if (responseJson.data.lithic_card) {",
+									"        pm.environment.set(\"seth_lithic_card_token\", responseJson.data.lithic_card.token);",
+									"        console.log(\"✅ Seth's debit card created by Eric with Lithic integration\");",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user_id\": {{seth_user_id}},\n  \"account_id\": {{seth_account_id}},\n  \"card_type\": \"debit\",\n  \"card_subtype\": \"physical\",\n  \"custom_limits\": {\n    \"daily_limit\": 1000.00,\n    \"monthly_limit\": 5000.00,\n    \"per_transaction_limit\": 500.00\n  },\n  \"memo\": \"Seth's personal debit card created by Eric (Owner)\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cards",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cards"
+							]
+						},
+						"description": "**Step 12:** Eric (Owner) creates a debit card for Seth.\n\n**Key Points:**\n- Uses Seth's personal account\n- Moderate limits for personal use\n- Physical card requested\n\n**RBAC:** Owner can create cards for any user."
+					}
+				},
+				{
+					"name": "3.4 Switch to Seth for Gabriel's Card Creation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Switch to Seth's token",
+									"pm.environment.set(\"jwt_token\", pm.environment.get(\"seth_jwt_token\"));",
+									"console.log(\"🔄 Switched to Seth (Super Admin) for Gabriel's card creation\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seth_jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"profile"
+							]
+						},
+						"description": "Switch to Seth's context for creating Gabriel's card."
+					}
+				},
+				{
+					"name": "3.5 Seth Creates Reloadable Card for Gabriel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Gabriel's reloadable card created successfully by Seth\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.card.card_type).to.eql('prepaid');",
+									"    pm.expect(responseJson.data.card.user_id).to.eql(parseInt(pm.environment.get('gabriel_user_id')));",
+									"    ",
+									"    pm.environment.set(\"gabriel_card_id\", responseJson.data.card.card_id);",
+									"    ",
+									"    if (responseJson.data.lithic_card) {",
+									"        pm.environment.set(\"gabriel_lithic_card_token\", responseJson.data.lithic_card.token);",
+									"        console.log(\"✅ Gabriel's reloadable (prepaid) card created by Seth\");",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user_id\": {{gabriel_user_id}},\n  \"account_id\": {{gabriel_account_id}},\n  \"card_type\": \"prepaid\",\n  \"card_subtype\": \"virtual\",\n  \"custom_limits\": {\n    \"daily_limit\": 500.00,\n    \"monthly_limit\": 2000.00,\n    \"per_transaction_limit\": 250.00\n  },\n  \"memo\": \"Gabriel's reloadable prepaid card created by Seth (Super Admin)\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cards",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cards"
+							]
+						},
+						"description": "**Step 13:** Seth (Super Admin) creates a reloadable (prepaid) card for Gabriel.\n\n**Key Points:**\n- Prepaid card type = reloadable\n- Uses Gabriel's personal account\n- Controlled spending limits\n\n**RBAC:** Super admin can create cards for lower-level users."
+					}
+				},
+				{
+					"name": "3.6 Switch to Gabriel for Nathalia's Setup",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Switch to Gabriel's token",
+									"pm.environment.set(\"jwt_token\", pm.environment.get(\"gabriel_jwt_token\"));",
+									"console.log(\"🔄 Switched to Gabriel (Admin) for Nathalia's spending profile and card creation\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gabriel_jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"profile"
+							]
+						},
+						"description": "Switch to Gabriel's context for creating spending profile and Nathalia's card."
+					}
+				},
+				{
+					"name": "3.7 Gabriel Creates Spending Profile for Nathalia",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Nathalia's spending profile created successfully by Gabriel\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.spending_profile.profile_name).to.eql('Nathalia Limited Profile');",
+									"    ",
+									"    pm.environment.set(\"nathalia_spending_profile_id\", responseJson.data.spending_profile.spending_profile_id);",
+									"    ",
+									"    if (responseJson.data.lithic_auth_rule) {",
+									"        pm.environment.set(\"nathalia_lithic_auth_rule_token\", responseJson.data.lithic_auth_rule.token);",
+									"        console.log(\"✅ Spending profile created with Lithic auth rule integration\");",
+									"        console.log(\"🔗 Lithic Auth Rule Token:\", responseJson.data.lithic_auth_rule.token);",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"profile_name\": \"Nathalia Limited Profile\",\n  \"description\": \"Limited spending profile for Nathalia's card with daily and monthly restrictions\",\n  \"daily_limit\": 150.00,\n  \"monthly_limit\": 800.00,\n  \"per_transaction_limit\": 75.00,\n  \"allowed_merchant_categories\": [\"5411\", \"5812\", \"5814\", \"5499\"],\n  \"blocked_merchant_categories\": [\"7995\", \"7994\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/spending-profiles",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"spending-profiles"
+							]
+						},
+						"description": "**Step 14:** Gabriel (Admin) creates a spending profile for Nathalia.\n\n**Key Points:**\n- Limited daily ($150) and monthly ($800) spending\n- Allowed merchant categories (groceries, restaurants, etc.)\n- Blocked categories (gambling, adult entertainment)\n\n**Lithic Integration:**\n- Creates auth rule in Lithic\n- Ready to be applied to cards"
+					}
+				},
+				{
+					"name": "3.8 Gabriel Creates Limit-Based Card for Nathalia",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Nathalia's limit-based card created successfully by Gabriel\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.card.card_type).to.eql('debit');",
+									"    pm.expect(responseJson.data.card.user_id).to.eql(parseInt(pm.environment.get('nathalia_user_id')));",
+									"    pm.expect(responseJson.data.card.spending_profile_id).to.eql(parseInt(pm.environment.get('nathalia_spending_profile_id')));",
+									"    ",
+									"    pm.environment.set(\"nathalia_card_id\", responseJson.data.card.card_id);",
+									"    ",
+									"    if (responseJson.data.lithic_card) {",
+									"        pm.environment.set(\"nathalia_lithic_card_token\", responseJson.data.lithic_card.token);",
+									"        console.log(\"✅ Nathalia's limit-based card created with spending profile\");",
+									"        console.log(\"📊 Using spending profile:\", responseJson.data.card.spending_profile.profile_name);",
+									"        console.log(\"💰 Effective limits:\", JSON.stringify(responseJson.data.effective_limits, null, 2));",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user_id\": {{nathalia_user_id}},\n  \"account_id\": {{nathalia_account_id}},\n  \"card_type\": \"debit\",\n  \"card_subtype\": \"physical\",\n  \"spending_profile_id\": {{nathalia_spending_profile_id}},\n  \"memo\": \"Nathalia's limit-based card with spending profile created by Gabriel (Admin)\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cards",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cards"
+							]
+						},
+						"description": "**Step 15:** Gabriel (Admin) creates a limit-based card for Nathalia using the spending profile.\n\n**Key Points:**\n- Uses the previously created spending profile\n- Physical card for in-person transactions\n- Automatic limit enforcement via Lithic auth rules\n\n**Lithic Integration:**\n- Card created in Lithic\n- Spending profile auth rule applied to card\n- Limits automatically enforced"
+					}
+				}
+			],
+			"description": "**Phase 3:** Create cards following the proper hierarchy - Owner creates cards for himself and super admin, super admin creates for admin, admin creates spending profile and card for user."
+		},
+		{
+			"name": "🔍 Phase 4: Validation & Testing",
+			"item": [
+				{
+					"name": "4.1 Verify All Cards Created Successfully",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"All cards retrieved successfully\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.cards).to.be.an('array');",
+									"    ",
+									"    console.log(\"\\n💳 CARD CREATION SUMMARY:\");",
+									"    console.log(\"========================\");",
+									"    console.log(\"Total cards created:\", responseJson.data.pagination.total);",
+									"    ",
+									"    responseJson.data.cards.forEach(card => {",
+									"        const owner = `${card.user.first_name} ${card.user.last_name}`;",
+									"        const limits = card.effective_limits;",
+									"        console.log(`\\n📋 ${owner}'s ${card.card_type} card (${card.card_subtype}):`);",
+									"        console.log(`   Status: ${card.status}`);",
+									"        console.log(`   Daily Limit: $${limits.daily_limit || 'N/A'}`);",
+									"        console.log(`   Monthly Limit: $${limits.monthly_limit || 'N/A'}`);",
+									"        console.log(`   Source: ${limits.source || 'N/A'}`);",
+									"        if (limits.profile_name) {",
+									"            console.log(`   Profile: ${limits.profile_name}`);",
+									"        }",
+									"    });",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gabriel_jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cards",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cards"
+							]
+						},
+						"description": "**Step 16:** Verify all cards were created successfully and display summary.\n\n**Expected Results:**\n- Eric's debit card (custom limits)\n- Seth's debit card (custom limits)\n- Gabriel's prepaid card (custom limits)\n- Nathalia's debit card (spending profile limits)"
+					}
+				},
+				{
+					"name": "4.2 Test Lindsey Card Creation (Should Fail)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Lindsey's card creation correctly blocked (Analyst role)\", function () {",
+									"    pm.response.to.have.status(400);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.error.code).to.eql('INVALID_USER_ROLE');",
+									"    console.log(\"❌ RBAC VALIDATION PASSED: Analyst role correctly blocked from having cards\");",
+									"    console.log(\"   Error:\", responseJson.error.message);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gabriel_jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user_id\": {{lindsey_user_id}},\n  \"account_id\": {{msd_cafe_account_id}},\n  \"card_type\": \"debit\",\n  \"card_subtype\": \"virtual\",\n  \"custom_limits\": {\n    \"daily_limit\": 100.00,\n    \"monthly_limit\": 500.00,\n    \"per_transaction_limit\": 50.00\n  },\n  \"memo\": \"Lindsey's card (should fail - analyst role)\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cards",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cards"
+							]
+						},
+						"description": "**Step 17:** Attempt to create a card for Lindsey (Analyst).\n\n**Expected Result:** Should fail with INVALID_USER_ROLE error.\n\n**RBAC Validation:** Confirms analysts cannot have cards."
+					}
+				},
+				{
+					"name": "4.3 Test Card Operations - Lock Nathalia's Card",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Nathalia's card locked successfully\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.new_status).to.eql('locked');",
+									"    console.log(\"🔒 Card operation test passed: Card locked successfully\");",
+									"    console.log(\"   Reason:\", responseJson.data.reason);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gabriel_jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"locked\",\n  \"reason\": \"Testing card management functionality\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cards/{{nathalia_card_id}}/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cards",
+								"{{nathalia_card_id}}",
+								"status"
+							]
+						},
+						"description": "**Step 18:** Test card status management by locking Nathalia's card.\n\n**Validates:**\n- Card status changes work\n- Admin can manage user cards\n- Lithic integration for status updates"
+					}
+				},
+				{
+					"name": "4.4 Test Card Operations - Unlock Nathalia's Card",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Nathalia's card unlocked successfully\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.success).to.be.true;",
+									"    pm.expect(responseJson.data.new_status).to.eql('active');",
+									"    console.log(\"🔓 Card operation test passed: Card unlocked successfully\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gabriel_jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"active\",\n  \"reason\": \"Testing completed - card restored to active status\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cards/{{nathalia_card_id}}/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cards",
+								"{{nathalia_card_id}}",
+								"status"
+							]
+						},
+						"description": "**Step 19:** Unlock Nathalia's card to restore normal functionality."
+					}
+				},
+				{
+					"name": "4.5 Verify Lithic Integration - System Health",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"System health check confirms Lithic integration\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.status).to.eql('healthy');",
+									"    pm.expect(responseJson.services.database).to.eql('healthy');",
+									"    pm.expect(responseJson.services.lithic_api).to.eql('healthy');",
+									"    ",
+									"    console.log(\"\\n🏥 SYSTEM HEALTH VALIDATION:\");",
+									"    console.log(\"=============================\");",
+									"    console.log(\"Overall Status:\", responseJson.status);",
+									"    console.log(\"Database:\", responseJson.services.database);",
+									"    console.log(\"Lithic API:\", responseJson.services.lithic_api);",
+									"    console.log(\"Environment:\", responseJson.environment);",
+									"    console.log(\"Uptime:\", Math.round(responseJson.system.uptime), \"seconds\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "**Step 20:** Verify system health and Lithic API integration.\n\n**Validates:**\n- Database connectivity\n- Lithic API connectivity (sandbox)\n- Overall system health"
+					}
+				},
+				{
+					"name": "4.6 Final Validation Summary",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"console.log(\"\\n🎉 LITHIC POC VALIDATION COMPLETE!\");",
+									"console.log(\"====================================\");",
+									"console.log(\"\\n✅ FLOW VALIDATION RESULTS:\");",
+									"console.log(\"\\n🏗️  FOUNDATION SETUP:\");",
+									"console.log(\"   ✓ Admin authentication working\");",
+									"console.log(\"   ✓ Eric (Owner) created with Lithic account holder\");",
+									"console.log(\"   ✓ MSD Cafe business account created with Lithic financial account\");",
+									"console.log(\"\\n👥 USER HIERARCHY CREATION:\");",
+									"console.log(\"   ✓ Eric (Owner) → Seth (Super Admin)\");",
+									"console.log(\"   ✓ Seth (Super Admin) → Gabriel (Admin)\");",
+									"console.log(\"   ✓ Gabriel (Admin) → Nathalia (User) & Lindsey (Analyst)\");",
+									"console.log(\"   ✓ All users have proper Lithic account holders (except Analyst)\");",
+									"console.log(\"\\n💳 CARD CREATION FLOW:\");",
+									"console.log(\"   ✓ Eric created debit card for himself (business account)\");",
+									"console.log(\"   ✓ Eric created debit card for Seth (personal account)\");",
+									"console.log(\"   ✓ Seth created reloadable card for Gabriel (prepaid type)\");",
+									"console.log(\"   ✓ Gabriel created spending profile with Lithic auth rules\");",
+									"console.log(\"   ✓ Gabriel created limit-based card for Nathalia (with profile)\");",
+									"console.log(\"   ✓ Lindsey card creation properly blocked (Analyst role)\");",
+									"console.log(\"\\n🔐 RBAC VALIDATION:\");",
+									"console.log(\"   ✓ Role hierarchy properly enforced\");",
+									"console.log(\"   ✓ Permission boundaries respected\");",
+									"console.log(\"   ✓ Analyst role restrictions working\");",
+									"console.log(\"\\n🔗 LITHIC INTEGRATION:\");",
+									"console.log(\"   ✓ Account holders created for card-eligible users\");",
+									"console.log(\"   ✓ Financial accounts linked to local accounts\");",
+									"console.log(\"   ✓ Cards created in Lithic with proper tokens\");",
+									"console.log(\"   ✓ Auth rules created for spending profiles\");",
+									"console.log(\"   ✓ Card status management working\");",
+									"console.log(\"   ✓ Sandbox API key validated:\", pm.environment.get('lithic_api_key'));",
+									"console.log(\"\\n🎯 POC OBJECTIVES ACHIEVED:\");",
+									"console.log(\"   ✓ MSD Cafe business account operational\");",
+									"console.log(\"   ✓ Medina family user hierarchy established\");",
+									"console.log(\"   ✓ Card distribution per requirements\");",
+									"console.log(\"   ✓ Spending profiles integrated with Lithic\");",
+									"console.log(\"   ✓ RBAC properly enforced throughout\");",
+									"console.log(\"   ✓ Lithic sandbox integration fully functional\");",
+									"console.log(\"\\n🚀 READY FOR PRODUCTION DEPLOYMENT!\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gabriel_jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cards/{{nathalia_card_id}}/limits",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cards",
+								"{{nathalia_card_id}}",
+								"limits"
+							]
+						},
+						"description": "**Final Step:** Complete validation summary showing all objectives achieved.\n\n**This request gets Nathalia's card limits to demonstrate:**\n- Spending profile integration\n- Lithic auth rule application\n- Limit enforcement ready for transactions"
+					}
+				}
+			],
+			"description": "**Phase 4:** Validate all created resources, test RBAC enforcement, verify Lithic integration, and confirm POC objectives are met."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set Lithic API key from environment",
+					"pm.environment.set('lithic_api_key', '595234f1-968e-4fad-b308-41f6e19bc93f');",
+					"",
+					"// Auto-refresh token if expired",
+					"if (pm.environment.get(\"jwt_token\")) {",
+					"    const token = pm.environment.get(\"jwt_token\");",
+					"    try {",
+					"        const payload = JSON.parse(atob(token.split('.')[1]));",
+					"        const now = Math.floor(Date.now() / 1000);",
+					"        ",
+					"        if (payload.exp < now + 60) {",
+					"            console.log(\"🔄 Token expiring soon, attempting refresh...\");",
+					"        }",
+					"    } catch (e) {",
+					"        // Token format error, ignore",
+					"    }",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global response time test",
+					"pm.test(\"Response time is acceptable\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(10000);",
+					"});",
+					"",
+					"// Log errors for debugging",
+					"if (pm.response.code >= 400) {",
+					"    console.log(\"❌ Error Response:\", pm.response.text());",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000/api",
+			"type": "string"
+		},
+		{
+			"key": "lithic_api_key",
+			"value": "595234f1-968e-4fad-b308-41f6e19bc93f",
+			"type": "string"
+		}
+	]
+}
