@@ -47,16 +47,13 @@ class AccountController {
         balance: initial_balance
       }, { transaction });
 
-      // Create Lithic financial account if user has Lithic account holder
+      // Link to Lithic account if user has Lithic account holder
       let lithicFinancialAccount = null;
       if (user.lithic_account_holder_token) {
         try {
-          const financialAccountData = lithicService.transformAccountToFinancialAccount({
-            account_name,
-            account_type
+          lithicFinancialAccount = await lithicService.createFinancialAccount({
+            account_holder_token: user.lithic_account_holder_token
           });
-
-          lithicFinancialAccount = await lithicService.createFinancialAccount(financialAccountData);
           
           // Update account with Lithic token
           await account.update({
@@ -353,24 +350,7 @@ class AccountController {
       // Update account
       await account.update(updates, { transaction });
 
-      // Update Lithic financial account if needed
-      if (account.lithic_financial_account_token && updates.account_name) {
-        try {
-          await lithicService.updateFinancialAccount(account.lithic_financial_account_token, {
-            nickname: updates.account_name
-          });
-          
-          apiLogger.info('Lithic financial account updated', {
-            accountId: account.account_id,
-            lithicToken: account.lithic_financial_account_token
-          });
-        } catch (lithicError) {
-          apiLogger.warn('Failed to update Lithic financial account', {
-            accountId: account.account_id,
-            error: lithicError.message
-          });
-        }
-      }
+      // No Lithic account update here; local account name changes don't map directly
 
       await transaction.commit();
 

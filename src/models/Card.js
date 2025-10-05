@@ -244,25 +244,8 @@ module.exports = (sequelize, DataTypes) => {
     const authRule = {
       account_tokens: [],
       card_tokens: [this.lithic_card_token],
-      program_level: false,
-      parameters: {
-        conditions: {
-          spend_limit: {}
-        }
-      }
+      program_level: false
     };
-
-    if (this.custom_daily_limit) {
-      authRule.parameters.conditions.spend_limit.daily = Math.round(parseFloat(this.custom_daily_limit) * 100);
-    }
-    
-    if (this.custom_monthly_limit) {
-      authRule.parameters.conditions.spend_limit.monthly = Math.round(parseFloat(this.custom_monthly_limit) * 100);
-    }
-    
-    if (this.custom_per_transaction_limit) {
-      authRule.parameters.conditions.spend_limit.per_authorization = Math.round(parseFloat(this.custom_per_transaction_limit) * 100);
-    }
 
     return authRule;
   };

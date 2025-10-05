@@ -89,7 +89,20 @@ const cardSchemas = {
       monthly_limit: commonSchemas.amount.optional(),
       per_transaction_limit: commonSchemas.amount.optional()
     }).optional(),
-    memo: Joi.string().max(500).optional()
+    memo: Joi.string().max(500).optional(),
+    shipping_address: Joi.object({
+      address1: Joi.string().max(200).required(),
+      address2: Joi.string().max(200).optional(),
+      city: Joi.string().max(100).required(),
+      state: Joi.string().max(2).required(),
+      postal_code: Joi.string().max(10).required(),
+      country: Joi.string().length(3).uppercase().required(),
+      first_name: Joi.string().max(100).optional(),
+      last_name: Joi.string().max(100).optional()
+    }).optional(),
+    shipping_method: Joi.string().valid('STANDARD','STANDARD_WITH_TRACKING','PRIORITY','EXPRESS','2_DAY','EXPEDITED').optional(),
+    product_id: Joi.string().max(100).optional(),
+    pin: Joi.string().base64().optional()
   }).xor('spending_profile_id', 'custom_limits'), // Either profile OR custom limits
 
   update: Joi.object({

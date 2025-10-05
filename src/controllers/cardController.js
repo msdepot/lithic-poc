@@ -16,7 +16,11 @@ class CardController {
         card_subtype = 'virtual',
         spending_profile_id,
         custom_limits,
-        memo
+        memo,
+        shipping_address,
+        shipping_method,
+        product_id,
+        pin
       } = req.body;
       const createdBy = req.user;
 
@@ -90,7 +94,11 @@ class CardController {
         const cardData = {
           card_subtype,
           memo,
-          lithic_financial_account_token: account.lithic_financial_account_token
+          lithic_financial_account_token: account.lithic_financial_account_token,
+          shipping_address,
+          shipping_method,
+          product_id,
+          pin
         };
 
         lithicCard = await lithicService.createCard(lithicService.transformCardData(cardData));
@@ -144,6 +152,11 @@ class CardController {
               lithicCardToken: lithicCard.token
             });
           }
+          // Apply profile limits to card (monthly / per-authorization)
+          await lithicService.applyCardLimits(lithicCard.token, {
+            monthly_limit: spendingProfile.monthly_limit,
+            per_transaction_limit: spendingProfile.per_transaction_limit
+          });
         } catch (lithicError) {
           apiLogger.warn('Failed to apply spending profile to Lithic card', {
             cardId: card.card_id,
@@ -153,20 +166,10 @@ class CardController {
       } else if (custom_limits) {
         // Create individual auth rule for custom limits
         try {
-          const authRuleData = card.toCustomAuthRule();
-          if (authRuleData) {
-            lithicAuthRule = await lithicService.createAuthRule(authRuleData);
-            await card.update({
-              lithic_auth_rule_token: lithicAuthRule.token
-            }, { transaction });
-            
-            apiLogger.info('Custom auth rule created for card', {
-              cardId: card.card_id,
-              lithicAuthRuleToken: lithicAuthRule.token
-            });
-          }
+          // Prefer direct card spend_limit when possible per Lithic API
+          await lithicService.applyCardLimits(lithicCard.token, custom_limits);
         } catch (lithicError) {
-          apiLogger.warn('Failed to create custom auth rule for card', {
+          apiLogger.warn('Failed to set card limits on Lithic', {
             cardId: card.card_id,
             error: lithicError.message
           });

@@ -15,6 +15,12 @@ const userRoutes = require('./routes/users');
 const accountRoutes = require('./routes/accounts');
 const spendingProfileRoutes = require('./routes/spendingProfiles');
 const cardRoutes = require('./routes/cards');
+let transactionRoutes;
+try {
+  transactionRoutes = require('./routes/transactions');
+} catch (_) {
+  // not present yet
+}
 
 // Error handling middleware
 const errorHandler = (err, req, res, next) => {
@@ -166,6 +172,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/spending-profiles', spendingProfileRoutes);
 app.use('/api/cards', cardRoutes);
+if (transactionRoutes) app.use('/api/transactions', transactionRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -179,7 +186,8 @@ app.get('/', (req, res) => {
       users: '/api/users',
       accounts: '/api/accounts',
       spending_profiles: '/api/spending-profiles',
-      cards: '/api/cards'
+      cards: '/api/cards',
+      transactions: '/api/transactions'
     },
     documentation: 'See LITHIC_POC_DOCUMENTATION.md for complete API documentation'
   });

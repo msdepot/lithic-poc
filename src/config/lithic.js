@@ -2,9 +2,21 @@ const Lithic = require('lithic');
 require('dotenv').config();
 
 // Initialize Lithic client
+function resolveLithicEnvironment() {
+  const env = (process.env.LITHIC_ENVIRONMENT || 'sandbox').toLowerCase();
+  if (env.startsWith('prod')) return 'production';
+  return 'sandbox';
+}
+
+if (!process.env.LITHIC_API_KEY) {
+  // Do not throw at import time to avoid crashing non-Lithic flows
+  console.warn('Warning: LITHIC_API_KEY not set. Lithic API calls will fail with 401.');
+}
+
 const lithicClient = new Lithic({
   apiKey: process.env.LITHIC_API_KEY,
-  environment: 'sandbox' // Use environment instead of baseURL
+  environment: resolveLithicEnvironment(),
+  baseURL: process.env.LITHIC_BASE_URL || undefined,
 });
 
 // Lithic API helper functions
@@ -45,16 +57,19 @@ class LithicService {
   }
 
   // Financial Account Methods - Note: In sandbox, financial accounts are auto-created
-  async createFinancialAccount(accountData) {
+  async createFinancialAccount({ account_holder_token }) {
     try {
-      // In Lithic sandbox, financial accounts are typically auto-created with account holders
-      // For POC purposes, we'll simulate this by returning a mock response
-      console.log('Financial account creation simulated for sandbox environment');
+      // Retrieve the holder to get their account token
+      const holder = await this.client.accountHolders.retrieve(account_holder_token);
+      const accountToken = holder.account_token;
+      if (!accountToken) {
+        throw new Error('Account holder does not have an associated Lithic account token');
+      }
+      // Retrieve account to get current state
+      const account = await this.client.accounts.retrieve(accountToken);
       return {
-        token: 'fin_acct_' + Math.random().toString(36).substr(2, 9),
-        type: accountData.type || 'OPERATING',
-        nickname: accountData.nickname,
-        status: 'ACTIVE'
+        token: accountToken,
+        status: account.state,
       };
     } catch (error) {
       console.error('Lithic createFinancialAccount error:', error);
@@ -115,7 +130,7 @@ class LithicService {
 
   async getCardSpendLimits(token) {
     try {
-      const response = await this.client.cards.getSpendLimits(token);
+      const response = await this.client.cards.retrieveSpendLimits(token);
       return response;
     } catch (error) {
       console.error('Lithic getCardSpendLimits error:', error);
@@ -218,11 +233,11 @@ class LithicService {
 
   // Helper Methods
   transformUserToAccountHolder(userData) {
-    // For business account holders (like MSD Cafe)
+    // Business enrollment (KYB)
     if (userData.account_type === 'business') {
       return {
-        beneficial_owner_entities: [],
-        beneficial_owner_individuals: [],
+        beneficial_owner_entities: userData.beneficial_owner_entities || [],
+        beneficial_owner_individuals: userData.beneficial_owner_individuals || [],
         business_entity: {
           address: {
             address1: userData.business_address1 || '123 Business Ave',
@@ -234,52 +249,32 @@ class LithicService {
           dba_business_name: userData.dba_business_name || userData.business_name,
           government_id: userData.business_ein || '123456789',
           legal_business_name: userData.business_name,
-          parent_company: userData.parent_company || null,
-          phone_numbers: [userData.business_phone || '+12345678901']
+          parent_company: userData.parent_company || undefined,
+          phone_numbers: [userData.business_phone || '+15551234567']
         },
         control_person: {
           address: {
-            address1: userData.address1 || '123 Main St',
-            city: userData.city || 'New York',
+            address1: userData.cp_address1 || userData.address1 || '123 Main St',
+            city: userData.cp_city || userData.city || 'New York',
             country: 'USA',
-            postal_code: userData.postal_code || '10001',
-            state: userData.state || 'NY'
+            postal_code: userData.cp_postal_code || userData.postal_code || '10001',
+            state: userData.cp_state || userData.state || 'NY'
           },
-          dob: userData.dob || '1990-01-01',
-          email: userData.email,
-          first_name: userData.first_name,
-          last_name: userData.last_name,
-          government_id: userData.government_id || '123456789',
-          phone_number: userData.phone ? userData.phone.replace(/[\s\-\(\)]/g, '') : '+15551234567'
+          dob: userData.cp_dob || userData.dob || '1990-01-01',
+          email: userData.cp_email || userData.email,
+          first_name: userData.cp_first_name || userData.first_name || 'First',
+          last_name: userData.cp_last_name || userData.last_name || 'Last',
+          phone_number: (userData.cp_phone || userData.phone || '+15551234567').replace(/[\s\-\(\)]/g, '')
         },
-        nature_of_business: userData.nature_of_business || 'Food Service',
+        nature_of_business: userData.nature_of_business || 'General',
         tos_timestamp: new Date().toISOString(),
-        workflow: 'KYC_EXEMPT',
-        kyc_exemption_type: 'AUTHORIZED_USER'
+        workflow: 'KYB_BASIC'
       };
     }
-    
-    // For individual account holders
+
+    // Individual enrollment (KYC)
     return {
-      // Required top-level fields
-      first_name: userData.first_name || 'First',
-      last_name: userData.last_name || 'Last', 
-      email: userData.email,
-      phone_number: userData.phone ? userData.phone.replace(/[\s\-\(\)]/g, '') : '+15551234567',
-      address: {
-        address1: userData.address1 || '123 Main St',
-        city: userData.city || 'New York',
-        country: 'USA',
-        postal_code: userData.postal_code || '10001',
-        state: userData.state || 'NY'
-      },
-      kyc_exemption_type: 'AUTHORIZED_USER',
-      
-      // Optional fields
-      beneficial_owner_entities: [],
-      beneficial_owner_individuals: [],
-      business_entity: null,
-      control_person: {
+      individual: {
         address: {
           address1: userData.address1 || '123 Main St',
           city: userData.city || 'New York',
@@ -292,11 +287,10 @@ class LithicService {
         first_name: userData.first_name || 'First',
         last_name: userData.last_name || 'Last',
         government_id: userData.government_id || '123456789',
-        phone_number: userData.phone ? userData.phone.replace(/[\s\-\(\)]/g, '') : '+15551234567'
+        phone_number: (userData.phone || '+15551234567').replace(/[\s\-\(\)]/g, '')
       },
-      nature_of_business: userData.nature_of_business || 'Individual',
       tos_timestamp: new Date().toISOString(),
-      workflow: 'KYC_EXEMPT'
+      workflow: 'KYC_BASIC'
     };
   }
 
@@ -310,12 +304,26 @@ class LithicService {
   transformCardData(cardData) {
     const lithicCardData = {
       type: cardData.card_subtype === 'virtual' ? 'VIRTUAL' : 'PHYSICAL',
-      memo: cardData.memo || 'Card created via POC API'
+      memo: cardData.memo || 'Card created via POC API',
     };
 
-    // Add financial account token if available
+    // Map local stored token to Lithic account_token
     if (cardData.lithic_financial_account_token) {
-      lithicCardData.financial_account_token = cardData.lithic_financial_account_token;
+      lithicCardData.account_token = cardData.lithic_financial_account_token;
+    }
+
+    // Physical card shipping parameters passthrough
+    if (cardData.shipping_address) {
+      lithicCardData.shipping_address = cardData.shipping_address;
+    }
+    if (cardData.shipping_method) {
+      lithicCardData.shipping_method = cardData.shipping_method;
+    }
+    if (cardData.product_id) {
+      lithicCardData.product_id = cardData.product_id;
+    }
+    if (cardData.pin) {
+      lithicCardData.pin = cardData.pin;
     }
 
     return lithicCardData;
@@ -326,38 +334,35 @@ class LithicService {
       account_tokens: [],
       card_tokens: cardTokens,
       program_level: false,
-      parameters: {
-        conditions: {}
-      }
     };
 
-    // Add spending limits
-    if (profile.daily_limit || profile.monthly_limit || profile.per_transaction_limit) {
-      authRuleData.parameters.conditions.spend_limit = {};
-      
-      if (profile.daily_limit) {
-        authRuleData.parameters.conditions.spend_limit.daily = Math.round(profile.daily_limit * 100); // Convert to cents
-      }
-      
-      if (profile.monthly_limit) {
-        authRuleData.parameters.conditions.spend_limit.monthly = Math.round(profile.monthly_limit * 100);
-      }
-      
-      if (profile.per_transaction_limit) {
-        authRuleData.parameters.conditions.spend_limit.per_authorization = Math.round(profile.per_transaction_limit * 100);
-      }
-    }
-
-    // Add merchant category controls
+    // Merchant category controls
     if (profile.allowed_merchant_categories && profile.allowed_merchant_categories.length > 0) {
-      authRuleData.parameters.conditions.allowed_mcc = profile.allowed_merchant_categories;
+      authRuleData.allowed_mcc = profile.allowed_merchant_categories;
     }
 
     if (profile.blocked_merchant_categories && profile.blocked_merchant_categories.length > 0) {
-      authRuleData.parameters.conditions.blocked_mcc = profile.blocked_merchant_categories;
+      authRuleData.blocked_mcc = profile.blocked_merchant_categories;
     }
 
     return authRuleData;
+  }
+
+  async applyCardLimits(cardToken, limits) {
+    // Map local limits to Lithic card spend_limit configuration
+    // Priority: per_transaction -> TRANSACTION; else monthly -> MONTHLY; else ignore
+    const update = {};
+    if (limits?.per_transaction_limit) {
+      update.spend_limit = Math.round(parseFloat(limits.per_transaction_limit) * 100);
+      update.spend_limit_duration = 'TRANSACTION';
+    } else if (limits?.monthly_limit) {
+      update.spend_limit = Math.round(parseFloat(limits.monthly_limit) * 100);
+      update.spend_limit_duration = 'MONTHLY';
+    } else {
+      return null;
+    }
+
+    return await this.client.cards.update(cardToken, update);
   }
 
   // Error handling
@@ -372,16 +377,10 @@ class LithicService {
   // Test connection
   async testConnection() {
     try {
-      // Test with a simple API call that should work
-      const response = await this.client.cards.list();
-      console.log('✅ Lithic API connection successful');
+      await this.client.apiStatus();
+      console.log('✅ Lithic API status reachable');
       return true;
     } catch (error) {
-      // Even if we get a 401 or other error, it means the API is reachable
-      if (error.status === 401 || error.message.includes('401')) {
-        console.log('✅ Lithic API connection successful (API reachable)');
-        return true;
-      }
       console.error('❌ Lithic API connection failed:', error.message);
       return false;
     }
