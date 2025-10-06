@@ -22,6 +22,13 @@ Welcome to the Lithic POC documentation! This folder contains all technical docu
   - Security architecture
   - Scalability considerations
 
+- **[database/](database/)** - Database documentation (NEW!)
+  - Complete schema reference
+  - Primary keys and indexes
+  - Entity relationships
+  - Performance recommendations
+  - Schema improvement suggestions
+
 - **[API.md](API.md)** - API reference
   - All endpoints documented
   - Request/response examples
@@ -50,6 +57,9 @@ Welcome to the Lithic POC documentation! This folder contains all technical docu
 **Learn how it's built**
 → [ARCHITECTURE.md](ARCHITECTURE.md)
 
+**Understand the database**
+→ [database/](database/)
+
 **Use the API**
 → [API.md](API.md)
 
@@ -67,9 +77,10 @@ Welcome to the Lithic POC documentation! This folder contains all technical docu
 
 ### For Developers
 1. [ARCHITECTURE.md](ARCHITECTURE.md) - Understand the system design
-2. [API.md](API.md) - Learn the API endpoints
-3. [LITHIC_INTEGRATION.md](LITHIC_INTEGRATION.md) - Understand external integration
-4. [FEATURES.md](FEATURES.md) - Understand feature implementation
+2. [database/](database/) - Review database schema and recommendations
+3. [API.md](API.md) - Learn the API endpoints
+4. [LITHIC_INTEGRATION.md](LITHIC_INTEGRATION.md) - Understand external integration
+5. [FEATURES.md](FEATURES.md) - Understand feature implementation
 
 ### For Integrators
 1. [API.md](API.md) - API reference
@@ -88,6 +99,14 @@ lithic-poc/
     ├── README.md      # This file
     ├── FEATURES.md    # Feature descriptions
     ├── ARCHITECTURE.md # Technical architecture
+    ├── database/      # Database documentation (NEW!)
+    │   ├── README.md             # Database docs index
+    │   ├── SUMMARY.md            # Executive summary
+    │   ├── SCHEMA_OVERVIEW.md    # Table definitions
+    │   ├── RELATIONSHIPS.md      # Foreign keys & relationships
+    │   ├── INDEXES.md            # Index analysis
+    │   ├── RECOMMENDATIONS.md    # Improvement suggestions
+    │   └── ER_DIAGRAM.md         # Visual diagrams
     ├── API.md         # API reference
     └── LITHIC_INTEGRATION.md # Lithic integration
 ```
