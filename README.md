@@ -1,13 +1,11 @@
-# Lithic POC - Full Stack Card Issuing Platform
+# Lithic POC - Card Issuing Platform
 
-A complete proof-of-concept for a card issuing platform using Lithic's sandbox API.
+A complete proof-of-concept for a card issuing platform using Lithic's sandbox API. This project demonstrates a production-ready full-stack application with real Lithic integration.
 
-## 🚀 **START HERE**
-
-### Quick Start (2 Commands)
+## 🚀 Quick Start
 
 ```bash
-# 1. Install dependencies (first time only)
+# 1. Install dependencies
 npm install && cd frontend && npm install && cd ..
 
 # 2. Start the application
@@ -16,168 +14,277 @@ npm run dev
 
 **Then open:** http://localhost:3000
 
-**For detailed testing steps, see:** [START_HERE.md](START_HERE.md) or [QUICK_START.md](QUICK_START.md)
+## 📚 Documentation
 
----
+The project documentation is organized into focused guides:
 
-## 🚀 Quick Start
+### Getting Started
+- **[docs/SETUP.md](docs/SETUP.md)** - Complete installation and setup instructions
+- **[docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)** - Step-by-step testing guide
 
-### Prerequisites
-- Node.js 18+ installed
-- Lithic sandbox API key configured in `.env` (already set up)
+### Understanding the Project
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Technical architecture and components
+- **[docs/TODO.md](docs/TODO.md)** - Complete workflow (9 steps)
 
-### Installation & Setup
+## 📋 What This Project Does
 
-**Option 1: Quick Start (SQLite - No Docker needed)**
+This POC demonstrates a complete card issuing workflow:
 
-1. **Install dependencies**:
-```bash
-npm install && cd frontend && npm install && cd ..
-```
+1. **Admin CRM** - Create business accounts via Lithic API
+2. **User Management** - Create users with role-based access (Owner, Admin, User, Analyst)
+3. **Card Issuing** - Issue debit and reloadable cards
+4. **Spending Profiles** - Create reusable spending restriction templates
+5. **Complete Visibility** - View all users and cards with details
 
-2. **Start the application**:
-```bash
-npm run dev
-```
+## 🎯 Key Features
 
-The application will start:
-- **Frontend**: http://localhost:3000
-- **Backend**: http://localhost:3001
-- **Database**: SQLite (database.sqlite)
-
-**Option 2: With PostgreSQL/Supabase**
-
-If you have PostgreSQL or Supabase running:
-
-1. Edit `.env` and uncomment PostgreSQL settings
-2. Run setup and start as above
-
-## 📋 Complete Flow Test
-
-### Step 1: Admin CRM - Create Account
-
-1. Go to http://localhost:3000
-2. Click **Admin CRM** tab
-3. Login with:
-   - Username: `admin`
-   - Password: `admin@123`
-4. Create MSD Cafe account:
-   - Business Name: `MSD Cafe`
-   - Owner Email: `eric@msdcafe.com`
-   - Owner First Name: `Eric`
-   - Owner Last Name: `Medina`
-   - Owner Phone: `+15555551234`
-5. **Note the Account ID** from success message
-6. Fund the account:
-   - Account ID: (use the ID from step 5)
-   - Amount: `15000`
-7. Logout
-
-### Step 2: Login as Owner (Eric)
-
-1. Click **User Login** tab
-2. Enter email: `eric@msdcafe.com`
-3. You're now logged in as Eric (Owner)
-
-### Step 3: Create Users
-
-Create the following users (all with phone: +15555552XXX where XXX is unique):
-
-1. **Seth Medina**
-   - Email: `seth@msdcafe.com`
-   - Role: Admin
-   - Phone: `+15555552001`
-
-2. **Gabriel Medina**
-   - Email: `gabriel@msdcafe.com`
-   - Role: User
-   - Phone: `+15555552002`
-
-3. **Nathalia Medina**
-   - Email: `nathalia@msdcafe.com`
-   - Role: User
-   - Phone: `+15555552003`
-
-4. **Lindsey Medina**
-   - Email: `lindsey@msdcafe.com`
-   - Role: Analyst
-   - Phone: `+15555552004`
-
-### Step 4: Create Cards for Eric and Seth
-
-1. Navigate to **Create Card**
-2. Create debit card for Eric:
-   - User: Eric Medina
-   - Card Type: Debit Card
-   - Spend Limit: (optional)
-3. Create debit card for Seth:
-   - User: Seth Medina
-   - Card Type: Debit Card
-4. Logout
-
-### Step 5: Login as Seth
-
-1. Login with email: `seth@msdcafe.com`
-
-### Step 6: Create Reloadable Card for Gabriel
-
-1. Navigate to **Create Card**
-2. Create card:
-   - User: Gabriel Medina
-   - Card Type: Reloadable Card
-
-### Step 7: Create Spending Profile
-
-1. Navigate to **Create Spending Profile**
-2. Create profile:
-   - Name: `Basic User Spending`
-   - Description: `Limited spending for regular users`
-   - Spend Limit: `500`
-   - Spend Limit Duration: Monthly
-   - Blocked Categories: `7995, 7011` (gambling, hotels)
-
-### Step 8: Create Card with Spending Profile
-
-1. Navigate to **Create Card**
-2. Create card for Nathalia:
-   - User: Nathalia Medina
-   - Card Type: Debit Card
-   - Spending Profile: Basic User Spending
-
-### Step 9: View Lists
-
-1. Navigate to **User List** - See all 5 users with their details
-2. Navigate to **Card List** - See all cards with spending limits and profiles
-
-## 🎯 Key Features Demonstrated
-
-- ✅ Admin CRM for account onboarding
-- ✅ Passwordless user login (email only)
-- ✅ Role-based access control (Owner, Admin, User, Analyst)
-- ✅ Lithic account holder creation
-- ✅ Multiple card types (debit, reloadable)
-- ✅ Custom spending profiles
-- ✅ Spending limits and restrictions
-- ✅ Complete user and card management
+- ✅ **Real Lithic Integration** - Uses actual Lithic sandbox API (not mocked)
+- ✅ **Full-Stack Application** - Backend (Node.js + Express) + Frontend (React)
+- ✅ **Zero Configuration** - SQLite database with automatic setup
+- ✅ **Role-Based Access** - 4 user roles with different permissions
+- ✅ **Multiple Card Types** - Debit and reloadable cards
+- ✅ **Spending Controls** - Custom profiles with limits and merchant restrictions
+- ✅ **Email-Only Login** - Passwordless authentication for POC simplicity
 
 ## 🔧 Tech Stack
 
-- **Backend**: Node.js + Express
-- **Database**: SQLite (can easily switch to PostgreSQL/Supabase)
-- **Frontend**: React with simple grayscale UI
-- **Card Provider**: Lithic Sandbox API
-- **Authentication**: JWT
+| Layer | Technology |
+|-------|-----------|
+| **Backend** | Node.js + Express + Sequelize ORM |
+| **Frontend** | React + React Router |
+| **Database** | SQLite (PostgreSQL-ready) |
+| **Authentication** | JWT |
+| **Card Provider** | Lithic Sandbox API |
 
-## 📝 Key Features
+## 🎨 UI Design
 
-- ✅ This is a POC - no passwords for user accounts (only email)
-- ✅ Uses Lithic sandbox environment with real API integration
-- ✅ Simple grayscale UI focused on functionality
-- ✅ All data persists in SQLite database
-- ✅ Complete role-based access control
-- ✅ Full card lifecycle management
-- ✅ Custom spending profiles and limits
+- **Grayscale only** - Focus on functionality
+- **Left sidebar navigation** - Easy access to all features
+- **Role-based menus** - Different options based on user role
+- **Simple forms** - Clean, functional data entry
 
-## 📚 Documentation
+## 🏗️ Project Structure
 
-See **[QUICK_START.md](QUICK_START.md)** for detailed step-by-step testing guide.
+```
+lithic-poc/
+├── backend/              # Node.js + Express API
+│   ├── config/          # Lithic API client
+│   ├── middleware/      # JWT authentication
+│   ├── models/          # Database models (Sequelize)
+│   ├── routes/          # API endpoints
+│   └── server.js        # Main server file
+├── frontend/            # React application
+│   ├── src/
+│   │   ├── components/  # Reusable UI components
+│   │   └── pages/       # Page components
+│   └── public/
+├── docs/                # Documentation
+│   ├── ARCHITECTURE.md  # Technical architecture
+│   ├── SETUP.md         # Installation guide
+│   ├── TESTING_GUIDE.md # Testing instructions
+│   └── TODO.md          # Workflow steps
+├── .env                 # Environment configuration
+└── package.json         # Dependencies
+```
+
+## 🎓 Complete Workflow (9 Steps)
+
+This POC demonstrates a complete workflow:
+
+1. **Admin creates business account** (MSD Cafe) with owner (Eric)
+2. **Owner logs in** with email-only authentication
+3. **Owner creates 4 users** - Seth (Admin), Gabriel (User), Nathalia (User), Lindsey (Analyst)
+4. **Owner creates debit cards** for Eric and Seth
+5. **Login as Seth** to demonstrate admin role
+6. **Seth creates reloadable card** for Gabriel
+7. **Seth creates spending profile** with custom rules (limits + blocked categories)
+8. **Seth creates card for Nathalia** with spending profile applied
+9. **View all users and cards** to verify complete visibility
+
+**For detailed steps, see:** [docs/TODO.md](docs/TODO.md)
+
+## 🔑 Login Credentials
+
+**Admin CRM:**
+- Username: `admin`
+- Password: `admin@123`
+
+**Users (after creation):**
+- Just enter email (no password needed)
+- Examples: `eric@msdcafe.com`, `seth@msdcafe.com`
+
+## 📦 What's Included
+
+**Backend API Routes:**
+- `/api/auth/*` - Admin and user login
+- `/api/accounts/*` - Account creation and funding
+- `/api/users/*` - User management
+- `/api/cards/*` - Card creation and listing
+- `/api/spending-profiles/*` - Spending profile management
+
+**Frontend Pages:**
+- Login (Admin CRM + User Login)
+- Admin Dashboard (account creation)
+- User Dashboard (main interface)
+
+**Frontend Components:**
+- Create User
+- Create Card
+- Create Spending Profile
+- User List
+- Card List
+
+## ⚡ Development Commands
+
+```bash
+# Start both frontend and backend
+npm run dev
+
+# Start backend only
+npm run server
+
+# Start frontend only
+cd frontend && npm start
+
+# Install all dependencies
+npm install && cd frontend && npm install && cd ..
+```
+
+## 🐛 Troubleshooting
+
+**Port already in use:**
+```bash
+# Change PORT in .env file
+PORT=3002
+```
+
+**Database issues:**
+```bash
+# Delete and restart (recreates database)
+rm database.sqlite
+npm run dev
+```
+
+**Dependencies issues:**
+```bash
+# Clean and reinstall
+rm -rf node_modules frontend/node_modules
+npm install && cd frontend && npm install && cd ..
+```
+
+**For more troubleshooting, see:** [docs/SETUP.md](docs/SETUP.md#troubleshooting)
+
+## 🌟 Key Concepts
+
+### Multi-Tenant Architecture
+Each business account has its own users and cards with data isolation.
+
+### Role-Based Access Control (RBAC)
+- **Owner** - Full control over account
+- **Admin** - Manage users and cards
+- **User** - Limited access
+- **Analyst** - Read-only access
+
+### Lithic Integration
+- Every user → Lithic account holder
+- Account → Lithic financial account
+- Every card → Real Lithic card in sandbox
+- Spending profiles → Lithic auth rules
+
+### Spending Profiles
+Reusable restriction templates that can be applied to multiple cards:
+- Spending limits with durations (monthly/annually/forever)
+- Merchant category controls (allowed/blocked)
+- Enforced via Lithic auth rules
+
+## 📊 Database Schema
+
+The application uses 4 main tables:
+
+- **accounts** - Business accounts
+- **users** - All users with roles
+- **cards** - All cards with limits
+- **spending_profiles** - Custom restriction templates
+
+All relationships are properly configured with foreign keys.
+
+## 🔒 Security Notes
+
+**Current Implementation (POC):**
+- JWT authentication for API access
+- Role-based authorization
+- Email-only login (no passwords for users)
+- Hardcoded admin credentials
+
+**Production Recommendations:**
+- Add password authentication
+- Implement password hashing
+- Use secure JWT secrets
+- Add rate limiting
+- Enable HTTPS/TLS
+- Implement audit logging
+
+## 🚀 Production Deployment
+
+To prepare for production:
+
+1. **Database:** Switch to PostgreSQL (configuration already supports it)
+2. **Security:** Add password authentication and HTTPS
+3. **Monitoring:** Add APM and error tracking
+4. **Scaling:** Add caching layer (Redis) and load balancing
+5. **Environment:** Use environment-specific configurations
+
+## 📖 Additional Resources
+
+- **[Lithic API Documentation](https://docs.lithic.com/)** - Official Lithic docs
+- **[Sequelize Documentation](https://sequelize.org/)** - ORM documentation
+- **[React Documentation](https://react.dev/)** - React documentation
+
+## 💡 Future Enhancements
+
+Ideas for extending this POC:
+
+- Transaction history and monitoring
+- Real-time webhooks for transaction notifications
+- Card activation/deactivation
+- Enhanced spending profile rules
+- User password authentication
+- Multi-factor authentication
+- Dashboard analytics and charts
+- Export/reporting features
+- Mobile responsive design
+- Unit and integration tests
+
+## 🎯 Success Criteria
+
+This POC demonstrates:
+
+- ✅ Real Lithic API integration (sandbox)
+- ✅ Complete admin CRM for onboarding
+- ✅ Multiple login types (admin + user)
+- ✅ Role-based access control
+- ✅ Multiple card types
+- ✅ Spending limits and profiles
+- ✅ Full user and card management
+- ✅ Clean, functional UI
+- ✅ Production-ready patterns
+- ✅ Scalable architecture
+
+## 📞 Support
+
+For help:
+
+1. **Setup issues:** See [docs/SETUP.md](docs/SETUP.md)
+2. **Testing questions:** See [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)
+3. **Architecture questions:** See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+4. **Workflow questions:** See [docs/TODO.md](docs/TODO.md)
+
+## 📝 License
+
+This is a proof-of-concept project for demonstration purposes.
+
+---
+
+**Ready to start?** Run `npm run dev` and open http://localhost:3000
+
+Built with ❤️ as a complete Lithic card issuing POC

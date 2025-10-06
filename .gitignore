@@ -6,3 +6,4 @@ frontend/build/
 npm-debug.log*
 database.sqlite
 database.sqlite-journal
+.env
