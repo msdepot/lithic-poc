@@ -1,183 +1,304 @@
-# Lithic POC - Full Stack Card Issuing Platform
+# Lithic POC - Card Issuing Platform
 
-A complete proof-of-concept for a card issuing platform using Lithic's sandbox API.
+A complete proof-of-concept demonstrating card issuing capabilities using Lithic's sandbox API. This project showcases a full-stack fintech application with user management, card provisioning, and spending controls.
 
-## 🚀 **START HERE**
+## 🚀 Quick Start
 
-### Quick Start (2 Commands)
+### Installation
 
 ```bash
-# 1. Install dependencies (first time only)
+# Install dependencies
 npm install && cd frontend && npm install && cd ..
 
-# 2. Start the application
+# Start the application
 npm run dev
 ```
 
 **Then open:** http://localhost:3000
 
-**For detailed testing steps, see:** [START_HERE.md](START_HERE.md) or [QUICK_START.md](QUICK_START.md)
+---
+
+## 📚 Documentation
+
+### Getting Started
+- **[WORKFLOW.md](WORKFLOW.md)** - Step-by-step testing workflow (start here!)
+
+### Technical Documentation
+- **[docs/FEATURES.md](docs/FEATURES.md)** - Feature descriptions and capabilities
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Technical architecture and design
+- **[docs/API.md](docs/API.md)** - Complete API reference
+- **[docs/LITHIC_INTEGRATION.md](docs/LITHIC_INTEGRATION.md)** - Lithic API integration details
 
 ---
 
-## 🚀 Quick Start
+## ✨ Key Features
 
-### Prerequisites
-- Node.js 18+ installed
-- Lithic sandbox API key configured in `.env` (already set up)
+- ✅ **Admin CRM** - Business account onboarding
+- ✅ **User Management** - Role-based access (Owner, Admin, User, Analyst)
+- ✅ **Card Issuing** - Debit and reloadable cards via Lithic API
+- ✅ **Spending Profiles** - Reusable restriction templates
+- ✅ **Real-time Integration** - Actual Lithic sandbox API (not mocked)
 
-### Installation & Setup
+---
 
-**Option 1: Quick Start (SQLite - No Docker needed)**
+## 🎯 What This POC Demonstrates
 
-1. **Install dependencies**:
-```bash
-npm install && cd frontend && npm install && cd ..
+### Complete Workflow
+
+1. **Admin** creates business account
+2. **Owner** manages users and cards
+3. **Users** receive cards with spending limits
+4. **Spending profiles** control merchant restrictions
+
+### Technologies Used
+
+- **Backend:** Node.js + Express + Sequelize
+- **Frontend:** React + React Router
+- **Database:** SQLite (PostgreSQL-ready)
+- **API Integration:** Lithic Sandbox
+- **Authentication:** JWT
+
+---
+
+## 🔑 Login Credentials
+
+### Admin CRM
+- Username: `admin`
+- Password: `admin@123`
+
+### Users
+- Email-only login (no password for POC)
+- Example: `eric@msdcafe.com`
+
+---
+
+## 📋 Testing the Complete Flow
+
+Follow the [WORKFLOW.md](WORKFLOW.md) document for the complete testing workflow. The workflow demonstrates:
+
+1. Admin creates account with owner
+2. Owner creates users (Seth, Gabriel, Nathalia, Lindsey)
+3. Owner creates debit cards
+4. Admin creates reloadable cards
+5. Admin creates spending profiles
+6. Admin attaches profiles to cards
+7. View all users and cards
+
+**Estimated time:** 10-15 minutes
+
+---
+
+## 🏗️ Project Structure
+
+```
+lithic-poc/
+├── backend/              # Express API server
+│   ├── config/          # Lithic API client
+│   ├── middleware/      # Authentication
+│   ├── models/          # Database models
+│   ├── routes/          # API endpoints
+│   └── server.js        # Entry point
+├── frontend/            # React application
+│   ├── src/
+│   │   ├── components/  # UI components
+│   │   ├── pages/       # Page components
+│   │   └── App.js       # Main app
+│   └── package.json
+├── docs/                # Documentation
+│   ├── ARCHITECTURE.md  # Technical architecture
+│   ├── FEATURES.md      # Feature descriptions
+│   ├── API.md           # API reference
+│   └── LITHIC_INTEGRATION.md # Lithic integration
+├── WORKFLOW.md          # Testing workflow
+├── .env                 # Environment variables
+└── package.json         # Dependencies
 ```
 
-2. **Start the application**:
+---
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create or edit `.env` file:
+
+```env
+# Server
+PORT=3001
+
+# Database (SQLite by default)
+DB_DIALECT=sqlite
+DB_STORAGE=./database.sqlite
+
+# Authentication
+JWT_SECRET=your-super-secret-jwt-key
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin@123
+
+# Lithic API
+LITHIC_API_KEY=your_sandbox_api_key
+LITHIC_BASE_URL=https://sandbox.lithic.com/v1
+```
+
+### Using PostgreSQL
+
+To switch to PostgreSQL:
+
+1. Update `.env`:
+   ```env
+   DB_DIALECT=postgres
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=lithic_poc
+   DB_USER=postgres
+   DB_PASSWORD=your_password
+   ```
+
+2. Install PostgreSQL:
+   ```bash
+   npm install pg pg-hstore
+   ```
+
+3. Start PostgreSQL (or use Docker):
+   ```bash
+   docker-compose up -d
+   ```
+
+---
+
+## 🐛 Troubleshooting
+
+### Backend won't start
+```bash
+npm install
+npm run server
+```
+
+### Frontend won't start
+```bash
+cd frontend
+npm install
+npm start
+```
+
+### Database issues
+```bash
+# Reset database
+rm database.sqlite
+npm run dev
+```
+
+### Port conflicts
+Edit `.env` and change `PORT=3001` to another port.
+
+---
+
+## 📖 Documentation Overview
+
+### For Users
+- **[WORKFLOW.md](WORKFLOW.md)** - How to test the complete system
+
+### For Developers
+- **[docs/FEATURES.md](docs/FEATURES.md)** - What each feature does
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - How the system is built
+- **[docs/API.md](docs/API.md)** - How to use the API
+- **[docs/LITHIC_INTEGRATION.md](docs/LITHIC_INTEGRATION.md)** - How Lithic integration works
+
+---
+
+## 🚀 Development
+
+### Run Backend Only
+```bash
+npm run server
+```
+
+### Run Frontend Only
+```bash
+cd frontend
+npm start
+```
+
+### Run Both (Development)
 ```bash
 npm run dev
 ```
 
-The application will start:
-- **Frontend**: http://localhost:3000
-- **Backend**: http://localhost:3001
-- **Database**: SQLite (database.sqlite)
+---
 
-**Option 2: With PostgreSQL/Supabase**
+## 🎓 Learning Resources
 
-If you have PostgreSQL or Supabase running:
+This POC demonstrates:
 
-1. Edit `.env` and uncomment PostgreSQL settings
-2. Run setup and start as above
+- Full-stack JavaScript development
+- RESTful API design
+- React component architecture
+- Database modeling with Sequelize
+- JWT authentication
+- External API integration (Lithic)
+- Role-based access control
+- Error handling patterns
 
-## 📋 Complete Flow Test
+---
 
-### Step 1: Admin CRM - Create Account
+## 🔐 Security Notes
 
-1. Go to http://localhost:3000
-2. Click **Admin CRM** tab
-3. Login with:
-   - Username: `admin`
-   - Password: `admin@123`
-4. Create MSD Cafe account:
-   - Business Name: `MSD Cafe`
-   - Owner Email: `eric@msdcafe.com`
-   - Owner First Name: `Eric`
-   - Owner Last Name: `Medina`
-   - Owner Phone: `+15555551234`
-5. **Note the Account ID** from success message
-6. Fund the account:
-   - Account ID: (use the ID from step 5)
-   - Amount: `15000`
-7. Logout
+### Current (POC)
+- Email-only login (no password for users)
+- Simple JWT authentication
+- Development CORS policy
 
-### Step 2: Login as Owner (Eric)
+### Production Requirements
+- Add password authentication
+- Implement MFA (multi-factor auth)
+- Secure CORS configuration
+- Rate limiting
+- Input validation
+- SQL injection prevention
+- XSS protection
 
-1. Click **User Login** tab
-2. Enter email: `eric@msdcafe.com`
-3. You're now logged in as Eric (Owner)
+---
 
-### Step 3: Create Users
+## 📊 Future Enhancements
 
-Create the following users (all with phone: +15555552XXX where XXX is unique):
+Features not included in this POC:
 
-1. **Seth Medina**
-   - Email: `seth@msdcafe.com`
-   - Role: Admin
-   - Phone: `+15555552001`
+- Transaction history
+- Real-time webhooks
+- Card activation/deactivation
+- Enhanced analytics
+- Mobile responsive design
+- Password authentication
+- Multi-factor authentication
+- Receipt capture
+- Budget management
+- Approval workflows
 
-2. **Gabriel Medina**
-   - Email: `gabriel@msdcafe.com`
-   - Role: User
-   - Phone: `+15555552002`
+---
 
-3. **Nathalia Medina**
-   - Email: `nathalia@msdcafe.com`
-   - Role: User
-   - Phone: `+15555552003`
+## 🤝 Contributing
 
-4. **Lindsey Medina**
-   - Email: `lindsey@msdcafe.com`
-   - Role: Analyst
-   - Phone: `+15555552004`
+This is a proof-of-concept project for learning and demonstration purposes.
 
-### Step 4: Create Cards for Eric and Seth
+---
 
-1. Navigate to **Create Card**
-2. Create debit card for Eric:
-   - User: Eric Medina
-   - Card Type: Debit Card
-   - Spend Limit: (optional)
-3. Create debit card for Seth:
-   - User: Seth Medina
-   - Card Type: Debit Card
-4. Logout
+## 📄 License
 
-### Step 5: Login as Seth
+This project is for demonstration purposes only.
 
-1. Login with email: `seth@msdcafe.com`
+---
 
-### Step 6: Create Reloadable Card for Gabriel
+## 🆘 Support
 
-1. Navigate to **Create Card**
-2. Create card:
-   - User: Gabriel Medina
-   - Card Type: Reloadable Card
+For questions or issues:
 
-### Step 7: Create Spending Profile
+1. Check the [WORKFLOW.md](WORKFLOW.md) for testing steps
+2. Review [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for technical details
+3. See [docs/API.md](docs/API.md) for API documentation
+4. Check `.env` configuration
 
-1. Navigate to **Create Spending Profile**
-2. Create profile:
-   - Name: `Basic User Spending`
-   - Description: `Limited spending for regular users`
-   - Spend Limit: `500`
-   - Spend Limit Duration: Monthly
-   - Blocked Categories: `7995, 7011` (gambling, hotels)
+---
 
-### Step 8: Create Card with Spending Profile
+**Built with ❤️ as a proof-of-concept for Lithic card issuing integration**
 
-1. Navigate to **Create Card**
-2. Create card for Nathalia:
-   - User: Nathalia Medina
-   - Card Type: Debit Card
-   - Spending Profile: Basic User Spending
-
-### Step 9: View Lists
-
-1. Navigate to **User List** - See all 5 users with their details
-2. Navigate to **Card List** - See all cards with spending limits and profiles
-
-## 🎯 Key Features Demonstrated
-
-- ✅ Admin CRM for account onboarding
-- ✅ Passwordless user login (email only)
-- ✅ Role-based access control (Owner, Admin, User, Analyst)
-- ✅ Lithic account holder creation
-- ✅ Multiple card types (debit, reloadable)
-- ✅ Custom spending profiles
-- ✅ Spending limits and restrictions
-- ✅ Complete user and card management
-
-## 🔧 Tech Stack
-
-- **Backend**: Node.js + Express
-- **Database**: SQLite (can easily switch to PostgreSQL/Supabase)
-- **Frontend**: React with simple grayscale UI
-- **Card Provider**: Lithic Sandbox API
-- **Authentication**: JWT
-
-## 📝 Key Features
-
-- ✅ This is a POC - no passwords for user accounts (only email)
-- ✅ Uses Lithic sandbox environment with real API integration
-- ✅ Simple grayscale UI focused on functionality
-- ✅ All data persists in SQLite database
-- ✅ Complete role-based access control
-- ✅ Full card lifecycle management
-- ✅ Custom spending profiles and limits
-
-## 📚 Documentation
-
-See **[QUICK_START.md](QUICK_START.md)** for detailed step-by-step testing guide.
+**Ready to start?** → [Follow the workflow](WORKFLOW.md)
