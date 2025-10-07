@@ -22,6 +22,8 @@ Welcome to the Lithic POC documentation! This folder contains all technical docu
   - Security architecture
   - Scalability considerations
 
+- **[database/README.md](database/README.md)** - Database schema, indexes, recommendations
+
 - **[API.md](API.md)** - API reference
   - All endpoints documented
   - Request/response examples
